@@ -1,0 +1,10 @@
+{
+  "isbn": "9783034016322",
+  "status": "located",
+  "toc_start_index": 4,
+  "toc_end_index": 6,
+  "top_score": 0.4468,
+  "margin": 0.2993,
+  "method": "text_token_overlap",
+  "verified": false
+}

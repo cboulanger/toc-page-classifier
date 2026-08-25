@@ -1,0 +1,10 @@
+{
+  "isbn": "9781138125711",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 6,
+  "top_score": 0.5254,
+  "margin": 0.2959,
+  "method": "text_token_overlap",
+  "verified": false
+}

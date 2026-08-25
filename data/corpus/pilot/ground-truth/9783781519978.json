@@ -1,0 +1,10 @@
+{
+  "isbn": "9783781519978",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 8,
+  "top_score": 0.6319,
+  "margin": 0.4498,
+  "method": "text_token_overlap",
+  "verified": false
+}

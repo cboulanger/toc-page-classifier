@@ -26,15 +26,28 @@ manual-transcription bottleneck into a scalable, automatable pairing.
 
 ## Methodology
 
-1. **Discovery** (`cli/harvest_oapen.py`, `cli/harvest_doab.py`): harvest
+1. **OA harvest** (`cli/harvest_oapen.py`, `cli/harvest_doab.py`): harvest
    OAPEN's and DOAB's public OAI-PMH "Books" sets (DSpace-based OA book
    repositories, ~50k and ~72k records respectively) into a local
-   ISBN → handle cache.
-2. **Matching** (`cli/match_dnb_oa.py`): intersect those caches' ISBNs
-   against the DNB TOC-scan corpus's own ISBNs (via the sibling
-   `dnb-toc-ground-truth` checkout), resolve each match's actual PDF
-   download link via the repository's DSpace REST API, and write
-   `data/corpus/pilot/manifest.json`.
+   ISBN → handle cache -- the pool of candidate ISBNs worth checking against
+   DNB.
+2. **Diverse discovery** (`cli/discover_oa_dnb_candidates.py`): for each OA
+   ISBN, check live against `lobid.org` (per-ISBN search, not the full
+   ~21.5GB lobid-resources dump -- see the script's docstring for why) for a
+   matching DNB "Kataloganreicherung" TOC scan, applying simple per-value
+   caps on language / RVK domain bucket / edited-volume-vs-monograph-vs-thesis
+   so no single value dominates the sample (`src/toc_page_classifier/diversity_sampler.py`
+   -- caps, not real stratified balancing). Resumable by construction: every
+   accepted record's raw lobid JSON is cached immediately
+   (`data/corpus/pilot/.lobid-cache/`, gitignored) and the manifest is
+   rewritten after every acceptance, so killing a long run to relax the caps
+   never loses progress already found. Writes `data/corpus/pilot/manifest.json`.
+
+   (`cli/match_dnb_oa.py` is an older, narrower variant: no live lobid
+   search, no diversity sampling, just an offline intersection against the
+   sibling `dnb-toc-ground-truth` checkout's 1,251-book pilot subset --
+   kept as a cheap sanity check, superseded by `discover_oa_dnb_candidates.py`
+   as the actual discovery path.)
 3. **Fetching** (`cli/fetch_pairs.py`): download both PDFs (the DNB TOC scan
    and the OA full text) for every matched pair.
 4. **Localization** (`cli/locate_toc.py`,
@@ -46,44 +59,44 @@ manual-transcription bottleneck into a scalable, automatable pairing.
    (a natural next evolution of `chapter-segmentation`'s existing
    layout-based pilot, which this repo's ground truth is meant to feed).
 
-## Current status (2026-08-25, initial exploration)
+## Current status (2026-08-25)
 
-Discovery so far, run against the `dnb-toc-ground-truth` pilot corpus's
-1,251 books (**not** the full DNB "Kataloganreicherung" universe, which is
-far larger but requires an hours-long full lobid-dump pull -- not done yet):
+A 100-book diverse sample, found by checking every OAPEN/DOAB OA ISBN
+(158,909 unique) live against lobid for a matching DNB TOC scan, with
+per-value caps of 50% (language), 40% (domain bucket), 70% (volume type):
 
-| Source | Records harvested | DNB-corpus matches |
-| --- | --- | --- |
-| OAPEN | 49,814 | 15 (14 unique ISBNs, 1 book listed twice under two OAPEN records) |
-| DOAB | 72,511 | 7 (0 overlap with OAPEN's matches) |
-| **Combined** | | **~21 unique books** |
+| Dimension | Breakdown |
+| --- | --- |
+| language | en=42, de=40, it=6, es=3, fr=2, nl=1 |
+| volume_type | monograph=59, edited_volume=25, thesis=16 |
+| domain_bucket (RVK top-level, coarse) | unknown=32 (not RVK-classified), MS=7, LB=5, AP=3, EC=3, ~40 other buckets at 1-2 each |
 
-Of the resolvable pairs downloaded and tested so far (OAPEN subset, 14
-books):
+Every one of the 100 matched pairs was downloaded and run through the
+text-overlap locator:
 
-- **10/14**: both the DNB TOC scan and the OA full text have a real,
-  OCR'd/native text layer. Plain word-token Jaccard overlap between the
-  DNB scan's text and every full-text page cleanly isolates the true TOC
-  page range at the top of the ranking, with a large score margin over the
-  next-best page (e.g. top score 0.67 vs. runner-up 0.31). Spot-checked one
-  match by hand (`9781447324775`, page 5) -- genuinely the "Contents" page.
-- **3/14**: the DNB TOC scan itself is a pure image with no OCR/text layer
-  at all (confirmed via embedded-image inspection). Text-overlap matching
-  cannot work here at all -- this is the scanned-TOC case that needs an
-  OCR-first or vision-embedding-based fallback, not implemented yet.
-- **1/14**: PDF download failed (self-signed TLS cert on `d-nb.info`) --
-  a fixable technical issue, not investigated further yet.
+- **95/100 located**: a clean, high-margin text-overlap match (see
+  `data/corpus/pilot/ground-truth/*.json`, `"status": "located"`).
+- **3/100 `reference_has_no_text`**: the DNB TOC scan itself is a pure
+  image with no OCR/text layer -- needs an OCR-first or
+  vision-embedding-based fallback, not implemented yet.
+- **2/100 `error`**: the DNB `toc_download_url` didn't actually serve a
+  PDF -- one returned an empty body, the other an HTML "externer Link"
+  catalog redirect page (a known DNB corpus artifact, not a bug here; see
+  `dnb-toc-ground-truth`'s own acquisition history for the same failure
+  mode). Not retried automatically -- a dead reference, not a transient
+  fetch error.
+
+None of the 95 `located` entries have been manually verified beyond a
+couple of spot-checks -- `"verified": false` on every one.
 
 **Known gaps / not yet done:**
 
-- The full lobid-resources dump (~21.5GB) hasn't been pulled -- the DNB side
-  of the match is currently limited to the 1,251-book pilot subset, not the
-  full DNB TOC-scan universe. Doing this would very likely multiply the
-  match count.
-- No OCR/vision fallback for the 3 known un-OCR'd DNB TOC scans.
-- `cli/fetch_pairs.py` and `cli/locate_toc.py` (see Methodology above)
-  process pairs from the manifest one at a time -- not yet run as a batch
-  and written to `data/corpus/pilot/ground-truth/`.
+- Discovery only checks ISBNs already known to OAPEN/DOAB; it never
+  streams the full lobid-resources dump, so it can't find DNB TOC scans
+  for OA books lobid doesn't already know the ISBN link for by other
+  means. In practice this hasn't been a limiting factor (100/100 found
+  entirely via live per-ISBN lookups).
+- No OCR/vision fallback for the 3 `reference_has_no_text` books.
 - No classifier training code yet -- this repo is currently at the
   ground-truth-generation stage.
 
@@ -91,9 +104,9 @@ books):
 
 ```bash
 uv sync
-uv run python cli/harvest_oapen.py   # ~5 min, ~500 requests
-uv run python cli/harvest_doab.py    # ~10 min, ~725 requests
-uv run python cli/match_dnb_oa.py    # requires a sibling ../dnb-toc-ground-truth checkout
+uv run python cli/harvest_oapen.py            # ~5 min, ~500 requests
+uv run python cli/harvest_doab.py             # ~10 min, ~725 requests
+uv run python cli/discover_oa_dnb_candidates.py --target 100  # live per-ISBN lobid checks; resumable, see its docstring
 uv run python cli/fetch_pairs.py
 uv run python cli/locate_toc.py
 uv run pytest

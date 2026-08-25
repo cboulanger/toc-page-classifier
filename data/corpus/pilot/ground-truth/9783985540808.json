@@ -1,0 +1,10 @@
+{
+  "isbn": "9783985540808",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 9,
+  "top_score": 0.4902,
+  "margin": 0.3156,
+  "method": "text_token_overlap",
+  "verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "isbn": "9788864538853",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 7,
+  "top_score": 0.5957,
+  "margin": 0.3288,
+  "method": "text_token_overlap",
+  "verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "isbn": "9783961472413",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 6,
+  "top_score": 0.9839,
+  "margin": 0.8123,
+  "method": "text_token_overlap",
+  "verified": false
+}

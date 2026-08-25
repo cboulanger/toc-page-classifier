@@ -1,0 +1,10 @@
+{
+  "isbn": "9781612496917",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 7,
+  "top_score": 0.8837,
+  "margin": 0.7658,
+  "method": "text_token_overlap",
+  "verified": false
+}

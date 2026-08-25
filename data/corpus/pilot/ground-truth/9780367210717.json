@@ -1,0 +1,10 @@
+{
+  "isbn": "9780367210717",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 5,
+  "top_score": 0.7561,
+  "margin": 0.5995,
+  "method": "text_token_overlap",
+  "verified": false
+}

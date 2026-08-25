@@ -1,0 +1,10 @@
+{
+  "isbn": "9783835356214",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 7,
+  "top_score": 0.4268,
+  "margin": 0.298,
+  "method": "text_token_overlap",
+  "verified": false
+}

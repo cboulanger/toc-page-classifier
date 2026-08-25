@@ -1,0 +1,10 @@
+{
+  "isbn": "9783863952631",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 6,
+  "top_score": 0.9388,
+  "margin": 0.7115,
+  "method": "text_token_overlap",
+  "verified": false
+}

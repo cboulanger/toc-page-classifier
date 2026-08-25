@@ -1,0 +1,10 @@
+{
+  "isbn": "9789462980624",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 7,
+  "top_score": 0.7609,
+  "margin": 0.3696,
+  "method": "text_token_overlap",
+  "verified": false
+}

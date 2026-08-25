@@ -1,0 +1,10 @@
+{
+  "isbn": "9789463726382",
+  "status": "located",
+  "toc_start_index": 20,
+  "toc_end_index": 21,
+  "top_score": 0.8,
+  "margin": 0.5329,
+  "method": "text_token_overlap",
+  "verified": false
+}

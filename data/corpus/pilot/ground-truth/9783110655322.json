@@ -1,0 +1,10 @@
+{
+  "isbn": "9783110655322",
+  "status": "located",
+  "toc_start_index": 9,
+  "toc_end_index": 10,
+  "top_score": 0.6828,
+  "margin": 0.5625,
+  "method": "text_token_overlap",
+  "verified": false
+}

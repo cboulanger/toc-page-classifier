@@ -1,0 +1,10 @@
+{
+  "isbn": "9783110749373",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 9,
+  "top_score": 0.3696,
+  "margin": 0.2771,
+  "method": "text_token_overlap",
+  "verified": false
+}

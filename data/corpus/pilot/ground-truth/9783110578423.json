@@ -1,0 +1,10 @@
+{
+  "isbn": "9783110578423",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 6,
+  "top_score": 0.3885,
+  "margin": 0.2879,
+  "method": "text_token_overlap",
+  "verified": false
+}

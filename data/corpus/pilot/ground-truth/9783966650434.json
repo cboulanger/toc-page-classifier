@@ -1,0 +1,10 @@
+{
+  "isbn": "9783966650434",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 8,
+  "top_score": 0.6239,
+  "margin": 0.505,
+  "method": "text_token_overlap",
+  "verified": false
+}

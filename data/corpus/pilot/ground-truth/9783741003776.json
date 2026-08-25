@@ -1,0 +1,10 @@
+{
+  "isbn": "9783741003776",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 7,
+  "top_score": 0.6296,
+  "margin": 0.4322,
+  "method": "text_token_overlap",
+  "verified": false
+}

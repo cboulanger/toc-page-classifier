@@ -1,0 +1,10 @@
+{
+  "isbn": "9783034345262",
+  "status": "located",
+  "toc_start_index": 20,
+  "toc_end_index": 22,
+  "top_score": 0.4434,
+  "margin": 0.202,
+  "method": "text_token_overlap",
+  "verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "isbn": "9788866558132",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 7,
+  "top_score": 0.7288,
+  "margin": 0.5893,
+  "method": "text_token_overlap",
+  "verified": false
+}

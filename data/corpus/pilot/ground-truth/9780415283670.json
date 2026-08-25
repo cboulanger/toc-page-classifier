@@ -1,0 +1,10 @@
+{
+  "isbn": "9780415283670",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 5,
+  "top_score": 1.0,
+  "margin": 0.8333,
+  "method": "text_token_overlap",
+  "verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "isbn": "9783631624029",
+  "status": "located",
+  "toc_start_index": 8,
+  "toc_end_index": 9,
+  "top_score": 0.6092,
+  "margin": 0.5227,
+  "method": "text_token_overlap",
+  "verified": false
+}

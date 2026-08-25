@@ -1,0 +1,10 @@
+{
+  "isbn": "9789004381476",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 6,
+  "top_score": 0.488,
+  "margin": 0.3284,
+  "method": "text_token_overlap",
+  "verified": false
+}

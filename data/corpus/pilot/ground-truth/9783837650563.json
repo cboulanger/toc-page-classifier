@@ -1,0 +1,10 @@
+{
+  "isbn": "9783837650563",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 8,
+  "top_score": 0.3351,
+  "margin": 0.2486,
+  "method": "text_token_overlap",
+  "verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "isbn": "9783837668001",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 6,
+  "top_score": 0.625,
+  "margin": 0.5172,
+  "method": "text_token_overlap",
+  "verified": false
+}

@@ -1,0 +1,10 @@
+{
+  "isbn": "9783847420248",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 5,
+  "top_score": 0.6026,
+  "margin": 0.3894,
+  "method": "text_token_overlap",
+  "verified": false
+}

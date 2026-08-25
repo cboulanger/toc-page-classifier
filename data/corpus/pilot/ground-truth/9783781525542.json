@@ -1,0 +1,10 @@
+{
+  "isbn": "9783781525542",
+  "status": "located",
+  "toc_start_index": 9,
+  "toc_end_index": 11,
+  "top_score": 0.4948,
+  "margin": 0.3322,
+  "method": "text_token_overlap",
+  "verified": false
+}

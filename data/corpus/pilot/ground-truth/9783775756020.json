@@ -1,0 +1,10 @@
+{
+  "isbn": "9783775756020",
+  "status": "located",
+  "toc_start_index": 13,
+  "toc_end_index": 18,
+  "top_score": 0.2259,
+  "margin": 0.1045,
+  "method": "text_token_overlap",
+  "verified": false
+}

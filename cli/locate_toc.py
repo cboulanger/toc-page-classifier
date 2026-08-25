@@ -12,6 +12,11 @@ cases needing an OCR-first or vision-based fallback (not implemented).
 `"margin"` (top score minus the best score just outside the located range)
 is a rough confidence signal: a low margin means the match is ambiguous and
 should be reviewed by hand before being trusted as ground truth.
+
+A book that raises an unexpected error while its PDF is being read (a
+malformed file, a pypdf limitation) is written with `"status": "error"` and
+its error message, rather than aborting the whole batch -- one bad PDF
+among a hundred shouldn't cost the rest their ground truth.
 """
 
 import json
@@ -37,12 +42,18 @@ def main() -> None:
             continue
 
         out_path = GT_DIR / f"{isbn}.json"
-        if not has_text(toc_path):
-            print(f"{isbn}: DNB TOC scan has no text layer -- needs OCR/vision fallback")
-            out_path.write_text(json.dumps({"isbn": isbn, "status": "reference_has_no_text"}, indent=2))
+        try:
+            if not has_text(toc_path):
+                print(f"{isbn}: DNB TOC scan has no text layer -- needs OCR/vision fallback")
+                out_path.write_text(json.dumps({"isbn": isbn, "status": "reference_has_no_text"}, indent=2))
+                continue
+
+            location = locate_toc_in_fulltext(toc_path, full_path)
+        except Exception as e:
+            print(f"{isbn}: ERROR reading PDF ({e})")
+            out_path.write_text(json.dumps({"isbn": isbn, "status": "error", "error": str(e)}, indent=2))
             continue
 
-        location = locate_toc_in_fulltext(toc_path, full_path)
         if location is None:
             print(f"{isbn}: no candidate found")
             out_path.write_text(json.dumps({"isbn": isbn, "status": "no_candidate"}, indent=2))

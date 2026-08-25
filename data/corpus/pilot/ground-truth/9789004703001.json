@@ -1,0 +1,10 @@
+{
+  "isbn": "9789004703001",
+  "status": "located",
+  "toc_start_index": 557,
+  "toc_end_index": 561,
+  "top_score": 0.2521,
+  "margin": 0.0689,
+  "method": "text_token_overlap",
+  "verified": false
+}

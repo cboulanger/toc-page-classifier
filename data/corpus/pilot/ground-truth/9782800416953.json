@@ -1,0 +1,10 @@
+{
+  "isbn": "9782800416953",
+  "status": "located",
+  "toc_start_index": 338,
+  "toc_end_index": 338,
+  "top_score": 0.6901,
+  "margin": 0.3528,
+  "method": "text_token_overlap",
+  "verified": false
+}

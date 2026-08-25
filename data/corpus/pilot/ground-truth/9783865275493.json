@@ -1,0 +1,10 @@
+{
+  "isbn": "9783865275493",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 7,
+  "top_score": 0.806,
+  "margin": 0.6848,
+  "method": "text_token_overlap",
+  "verified": false
+}

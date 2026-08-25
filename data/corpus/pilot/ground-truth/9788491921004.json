@@ -1,0 +1,10 @@
+{
+  "isbn": "9788491921004",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 7,
+  "top_score": 0.5376,
+  "margin": 0.3943,
+  "method": "text_token_overlap",
+  "verified": false
+}

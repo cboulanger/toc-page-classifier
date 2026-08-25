@@ -1,0 +1,10 @@
+{
+  "isbn": "9788866555094",
+  "status": "located",
+  "toc_start_index": 7,
+  "toc_end_index": 8,
+  "top_score": 0.5989,
+  "margin": 0.4675,
+  "method": "text_token_overlap",
+  "verified": false
+}

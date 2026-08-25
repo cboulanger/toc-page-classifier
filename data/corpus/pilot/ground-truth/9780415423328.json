@@ -1,0 +1,10 @@
+{
+  "isbn": "9780415423328",
+  "status": "located",
+  "toc_start_index": 6,
+  "toc_end_index": 6,
+  "top_score": 0.75,
+  "margin": 0.4587,
+  "method": "text_token_overlap",
+  "verified": false
+}

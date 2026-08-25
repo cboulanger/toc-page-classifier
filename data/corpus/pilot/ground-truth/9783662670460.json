@@ -1,0 +1,10 @@
+{
+  "isbn": "9783662670460",
+  "status": "located",
+  "toc_start_index": 11,
+  "toc_end_index": 16,
+  "top_score": 0.2693,
+  "margin": 0.1406,
+  "method": "text_token_overlap",
+  "verified": false
+}
