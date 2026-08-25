@@ -1,0 +1,8 @@
+{
+  "en": ["contents", "table of contents"],
+  "de": ["inhalt", "inhaltsverzeichnis"],
+  "fr": ["sommaire", "table des matières"],
+  "it": ["indice", "sommario"],
+  "es": ["índice", "tabla de contenidos", "contenido"],
+  "nl": ["inhoud", "inhoudsopgave"]
+}

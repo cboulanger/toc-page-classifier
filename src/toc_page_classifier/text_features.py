@@ -1,14 +1,20 @@
 """Text/structural features for TOC-page detection: a standalone
 reimplementation of chapter_segmentation's TOC-line structural pattern
 (src/chapter_segmentation/segmentation.py's _TOC_LINE_RE and friends -- not
-imported, to keep this repo self-contained) plus, once
-keyword_hit_* is wired up in a later task, multilingual keyword matching against
-data/toc_keywords.json. See
+imported, to keep this repo self-contained) plus multilingual keyword
+matching against data/toc_keywords.json. See
 docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's "Text /
 structural" section."""
 
+import json
 import re
+from functools import lru_cache
 from itertools import pairwise
+from pathlib import Path
+
+DEFAULT_KEYWORDS_PATH = str(
+    Path(__file__).resolve().parent.parent.parent / "data" / "toc_keywords.json"
+)
 
 # Matches "<title> <dots-or-spaces> <page number>". Requires at least 2
 # separator characters so ordinary prose sentences ending in a number don't
@@ -39,6 +45,11 @@ TEXT_FEATURE_NAMES = [
     "keyword_hit_any_language",
     "keyword_hit_same_language",
 ]
+
+
+@lru_cache(maxsize=8)
+def _load_keywords(keywords_path: str) -> dict[str, list[str]]:
+    return json.loads(Path(keywords_path).read_text(encoding="utf-8"))
 
 
 def _parse_page_number(raw: str) -> int | None:
@@ -83,12 +94,18 @@ def _is_toc_line_candidate(line: str) -> bool:
 def extract_text_features(
     pages: list[str],
     language: str | None = None,
-    keywords_path: str | None = None,
+    keywords_path: str | None = DEFAULT_KEYWORDS_PATH,
 ) -> dict[int, dict[str, float]]:
     """Structural + keyword text features, one dict per page index.
     `language` is the book's own declared language code (e.g. "en"), used
-    only for keyword_hit_same_language. `keywords_path` is wired up in
-    a later task -- until then, keyword_hit_* are always 0.0."""
+    only for keyword_hit_same_language -- pass None if unknown.
+    `keywords_path` points at a JSON file of {language_code: [keyword, ...]}
+    (see data/toc_keywords.json); pass None to disable keyword matching
+    entirely (keyword_hit_* always 0.0)."""
+    keywords = _load_keywords(keywords_path) if keywords_path else {}
+    all_keywords = [kw.lower() for kws in keywords.values() for kw in kws]
+    same_language_keywords = [kw.lower() for kw in keywords.get(language, [])] if language else []
+
     features: dict[int, dict[str, float]] = {}
     for page_index, text in enumerate(pages):
         lines = [line for line in text.splitlines() if line.strip()]
@@ -101,13 +118,16 @@ def extract_text_features(
             len(page_numbers) >= 2 and all(b > a for a, b in pairwise(page_numbers))
         )
         digit_density = sum(c.isdigit() for c in text) / len(text) if text else 0.0
+        opening_text = " ".join(lines[:5]).lower()
 
         features[page_index] = {
             "toc_line_count": float(len(matches)),
             "toc_line_ratio": len(matches) / len(candidate_lines) if candidate_lines else 0.0,
             "digit_density": digit_density,
             "monotonic_page_numbers": monotonic,
-            "keyword_hit_any_language": 0.0,
-            "keyword_hit_same_language": 0.0,
+            "keyword_hit_any_language": float(any(kw in opening_text for kw in all_keywords)),
+            "keyword_hit_same_language": float(
+                any(kw in opening_text for kw in same_language_keywords)
+            ),
         }
     return features

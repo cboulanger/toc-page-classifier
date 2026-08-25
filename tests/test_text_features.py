@@ -1,3 +1,5 @@
+import json
+
 from toc_page_classifier.text_features import TEXT_FEATURE_NAMES, extract_text_features
 
 
@@ -39,3 +41,31 @@ def test_extract_text_features_keyword_hits_default_to_zero_without_keywords_pat
     features = extract_text_features(["Contents\n"], language="en", keywords_path=None)
     assert features[0]["keyword_hit_any_language"] == 0.0
     assert features[0]["keyword_hit_same_language"] == 0.0
+
+
+def test_extract_text_features_keyword_hit_any_language(tmp_path):
+    keywords_path = tmp_path / "keywords.json"
+    keywords_path.write_text(json.dumps({"en": ["contents"], "de": ["inhalt"]}))
+    features = extract_text_features(["INHALT\n\nKapitel 1 .... 5\n"], keywords_path=str(keywords_path))
+    assert features[0]["keyword_hit_any_language"] == 1.0
+
+
+def test_extract_text_features_keyword_hit_same_language_requires_matching_language(tmp_path):
+    keywords_path = tmp_path / "keywords.json"
+    keywords_path.write_text(json.dumps({"en": ["contents"], "de": ["inhalt"]}))
+    features = extract_text_features(
+        ["INHALT\n\nKapitel 1 .... 5\n"], language="en", keywords_path=str(keywords_path)
+    )
+    # matches "de"'s keyword, but book is declared "en" -- any-language hits,
+    # same-language does not
+    assert features[0]["keyword_hit_any_language"] == 1.0
+    assert features[0]["keyword_hit_same_language"] == 0.0
+
+
+def test_extract_text_features_keyword_hit_same_language_matches(tmp_path):
+    keywords_path = tmp_path / "keywords.json"
+    keywords_path.write_text(json.dumps({"en": ["contents"], "de": ["inhalt"]}))
+    features = extract_text_features(
+        ["INHALT\n\nKapitel 1 .... 5\n"], language="de", keywords_path=str(keywords_path)
+    )
+    assert features[0]["keyword_hit_same_language"] == 1.0
