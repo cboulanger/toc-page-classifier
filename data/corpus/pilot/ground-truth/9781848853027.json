@@ -6,5 +6,6 @@
   "top_score": 0.4378,
   "margin": 0.0447,
   "method": "text_token_ochiai_fixed_window",
-  "verified": false
+  "verified": false,
+  "correction_note": "Left unresolved, not corrected: this source PDF has a text-extraction defect where nearly every page is extracted twice in a row, so physical page 8 is an exact text duplicate of page 7 rather than the true continuation page (the genuine second Contents page -- chapters 6-8, Notes, Glossary, Bibliography, Index, per the DNB reference's own page 2 -- is effectively absent from this extraction). Page 7 (the labeled start) is confirmed correct. Flagged as a data-quality issue in the source PDF/extraction, not a locate_toc.py bug -- worth excluding from training or re-extracting with a different tool rather than trusting toc_end_index here. Found 2026-08-25 during a low-margin spot-check."
 }

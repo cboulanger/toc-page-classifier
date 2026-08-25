@@ -1,10 +1,11 @@
 {
   "isbn": "9781640141803",
   "status": "located",
-  "toc_start_index": 4,
+  "toc_start_index": 5,
   "toc_end_index": 6,
   "top_score": 0.4285,
   "margin": 0.1875,
   "method": "text_token_ochiai_fixed_window",
-  "verified": false
+  "verified": true,
+  "correction_note": "Automated range was 4-6 (page 4 is the copyright/imprint page, not TOC). The DNB reference scan bundles its own title page ahead of the real Contents pages as part of its 3-page excerpt, so the fixed-window size (3) is one longer than the true 2-page Contents in this full-text copy. Corrected by hand 2026-08-25 after a low-margin spot-check found it."
 }

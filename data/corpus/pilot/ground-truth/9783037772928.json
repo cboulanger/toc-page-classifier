@@ -1,10 +1,11 @@
 {
   "isbn": "9783037772928",
   "status": "located",
-  "toc_start_index": 144,
-  "toc_end_index": 148,
+  "toc_start_index": 7,
+  "toc_end_index": 8,
   "top_score": 0.2998,
   "margin": 0.0324,
   "method": "text_token_ochiai_fixed_window",
-  "verified": false
+  "verified": true,
+  "correction_note": "Automated range was 144-148 (back matter: bibliography, appendix tables, List of Tables/Figures, back-cover blurb -- not the TOC). Root cause is a reference-quality issue, not a range-selection error: the DNB reference scan itself conflates the real Content pages with List-of-Tables/List-of-Figures pages into one 5-page excerpt, so the fixed-window matcher latched onto a back-matter List-of-Tables/Figures section that shares that same vocabulary instead of the true front-matter Content pages. The real Content section (chapters 1-9) is at pages 7-8. Corrected by hand 2026-08-25 after a low-margin spot-check found it; top_score/margin are the algorithm's original (uncorrected) output, kept for provenance."
 }
