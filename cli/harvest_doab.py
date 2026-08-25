@@ -9,7 +9,7 @@ minutes). DOAB largely mirrors OAPEN plus other publishers/repositories, so
 expect real but partial overlap with `harvest_oapen.py`'s output -- and
 unlike OAPEN, many DOAB records have no directly resolvable full-text PDF at
 all (DOAB is a directory that often links out to a publisher's own site
-rather than hosting a copy); `match_dnb_oa.py` records this rather than
+rather than hosting a copy); `discover_oa_dnb_candidates.py` records this rather than
 silently dropping such matches.
 """
 

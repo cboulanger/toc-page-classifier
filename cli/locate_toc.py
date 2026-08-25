@@ -19,6 +19,7 @@ its error message, rather than aborting the whole batch -- one bad PDF
 among a hundred shouldn't cost the rest their ground truth.
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -31,6 +32,7 @@ GT_DIR = REPO_ROOT / "data" / "corpus" / "pilot" / "ground-truth"
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     GT_DIR.mkdir(parents=True, exist_ok=True)
     toc_paths = sorted(PDF_DIR.glob("*.dnb_toc.pdf"))
     print(f"Found {len(toc_paths)} downloaded pairs")

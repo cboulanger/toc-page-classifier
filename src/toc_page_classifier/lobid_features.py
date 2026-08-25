@@ -1,12 +1,10 @@
 """Extracting diversity-relevant features from a raw lobid-resources record,
 plus the basic "is this a usable DNB TOC-scan candidate" predicate.
 
-Deliberately broader than `dnb-toc-ground-truth/cli/fetch_corpus.py`'s own
-`_record_matches`: that script requires `"EditedVolume"` specifically (its
-evaluation corpus targets edited-volume TOC layouts). This module accepts
-any `"Book"`-typed record with a table of contents -- monographs and
-theses too -- because for OA-matching purposes a monograph's TOC is just as
-usable a ground-truth candidate, and excluding them would also exclude most
+Deliberately broad: any `"Book"`-typed record with a table of contents
+counts -- monographs and theses, not just edited volumes -- because for
+OA-matching purposes a monograph's TOC is just as usable a ground-truth
+candidate as an edited volume's, and excluding them would also exclude most
 of the language/domain diversity a single template concentrates in.
 """
 

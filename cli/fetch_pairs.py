@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Downloads both PDFs (DNB TOC scan + OA full text) for every matched pair
-in `data/corpus/pilot/manifest.json` (written by `match_dnb_oa.py`), into
+in `data/corpus/pilot/manifest.json` (written by `discover_oa_dnb_candidates.py`), into
 `data/corpus/pilot/pdf/<isbn>.dnb_toc.pdf` and `<isbn>.fulltext.pdf`.
 
     uv run python cli/fetch_pairs.py
 
-PDFs are gitignored, same convention as `dnb-toc-ground-truth`. Skips a
-pair entirely if `oa_pdf_url` is null (no resolvable OA PDF link yet -- see
+PDFs are gitignored (see `.gitignore`). Skips a pair entirely if
+`oa_pdf_url` is null (no resolvable OA PDF link yet -- see
 `match_dnb_oa.py`'s "NO DIRECT PDF LINK" entries) or if both files already
 exist locally.
 """
 
+import argparse
 import json
 import ssl
 from pathlib import Path
@@ -39,6 +40,7 @@ def fetch_binary(url: str) -> bytes:
 
 
 def main() -> None:
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     books = json.loads(MANIFEST.read_text())["books"]
     PDF_DIR.mkdir(parents=True, exist_ok=True)
 

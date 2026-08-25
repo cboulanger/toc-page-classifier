@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Harvests OAPEN's "Books" OAI-PMH set into a local cache of ISBN -> handle
-records, for `match_dnb_oa.py` to intersect against the DNB TOC-scan corpus.
+records, for `discover_oa_dnb_candidates.py` (or `match_dnb_oa.py`) to
+intersect against DNB TOC-scan records.
 
     uv run python cli/harvest_oapen.py
 
 Re-running overwrites the cache from scratch -- OAPEN's Books set has ~49.8k
 records as of 2026-08-25, so a full run takes several minutes and issues
 ~500 HTTP requests against library.oapen.org. Not something to run on every
-commit; re-run it periodically (e.g. before a `match_dnb_oa.py` pass) to pick
+commit; re-run it periodically (e.g. before a `discover_oa_dnb_candidates.py`
+pass) to pick
 up newly-added OAPEN books.
 """
 

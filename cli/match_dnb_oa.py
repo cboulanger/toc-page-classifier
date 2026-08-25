@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 """Intersects the harvested OAPEN/DOAB ISBN caches (`harvest_oapen.py`,
-`harvest_doab.py`) against the DNB TOC-scan corpus's own ISBNs, resolves
-each match's actual PDF download link, and writes the result to
-`data/corpus/pilot/manifest.json` -- the committed list this repo's other
-scripts (`fetch_pairs.py`, `locate_toc.py`) and eventually the classifier's
-training data build on.
+`harvest_doab.py`) against a local DNB TOC-scan manifest's own ISBNs
+(`toc_page_classifier.dnb_manifest`, configured via `DNB_TOC_CORPUS_DIR`),
+resolves each match's actual PDF download link, and writes the result to
+`--out` (default: `data/corpus/pilot/match_dnb_oa_check.json`, gitignored).
 
     uv run python cli/match_dnb_oa.py
 
+This is a narrower, offline-only cross-check against whatever local DNB
+manifest `DNB_TOC_CORPUS_DIR` points at -- no live lobid search, no
+diversity sampling. It deliberately does NOT write to
+`data/corpus/pilot/manifest.json`: that file is owned by
+`discover_oa_dnb_candidates.py`, and overwriting it here would silently
+replace the actual diverse sample with whatever this narrower check finds.
+
 Requires both harvest caches to already exist (run the two harvest scripts
-first). Safe to re-run: it rebuilds the manifest from scratch each time
+first). Safe to re-run: it rebuilds its output from scratch each time
 rather than appending, so it can't accumulate stale duplicate entries from
 an earlier partial run.
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -23,7 +30,7 @@ from toc_page_classifier.oa_repository import resolve_pdf_bitstream
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OAPEN_CACHE = REPO_ROOT / "data" / "corpus" / "pilot" / ".oapen-cache" / "books.jsonl"
 DOAB_CACHE = REPO_ROOT / "data" / "corpus" / "pilot" / ".doab-cache" / "books.jsonl"
-OUT_MANIFEST = REPO_ROOT / "data" / "corpus" / "pilot" / "manifest.json"
+DEFAULT_OUT = REPO_ROOT / "data" / "corpus" / "pilot" / "match_dnb_oa_check.json"
 
 OAPEN_REST_BASE = "https://library.oapen.org"
 DOAB_REST_BASE = "https://directory.doabooks.org"
@@ -37,6 +44,10 @@ def load_cache(path: Path) -> list[dict]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    args = parser.parse_args()
+
     dnb_books = load_dnb_books_by_isbn()
     print(f"DNB corpus: {len(dnb_books)} books")
 
@@ -79,10 +90,10 @@ def main() -> None:
                 status = "OK" if pdf_url else "NO DIRECT PDF LINK"
                 print(f"  + {isbn} ({source_name}) -- {status}")
 
-    OUT_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
-    OUT_MANIFEST.write_text(json.dumps({"books": entries}, indent=2, ensure_ascii=False))
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps({"books": entries}, indent=2, ensure_ascii=False))
     n_with_pdf = sum(1 for e in entries if e["oa_pdf_url"])
-    print(f"\nWrote {len(entries)} matches ({n_with_pdf} with a resolvable PDF link) to {OUT_MANIFEST}")
+    print(f"\nWrote {len(entries)} matches ({n_with_pdf} with a resolvable PDF link) to {args.out}")
 
 
 if __name__ == "__main__":
