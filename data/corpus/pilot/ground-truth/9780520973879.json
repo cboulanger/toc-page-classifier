@@ -5,6 +5,6 @@
   "toc_end_index": 12,
   "top_score": 0.7233,
   "margin": 0.4282,
-  "method": "text_token_containment",
+  "method": "text_token_ochiai_fixed_window",
   "verified": false
 }

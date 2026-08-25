@@ -1,10 +1,11 @@
 {
   "isbn": "9789462980624",
   "status": "located",
-  "toc_start_index": 6,
+  "toc_start_index": 7,
   "toc_end_index": 7,
   "top_score": 0.5021,
   "margin": 0.1025,
-  "method": "text_token_containment",
-  "verified": false
+  "method": "text_token_ochiai_fixed_window",
+  "verified": true,
+  "correction_note": "Automated range was 6-7 (page 6 is an unrelated dedication/photo page, not TOC). The DNB reference scan for this book bundles its own title page with the real Contents page as a 2-page excerpt, but this full-text copy's page adjacent to the true single-page Contents is unrelated content -- the fixed-window-size assumption (reference page count == true TOC length) doesn't hold for this one book. Corrected by hand 2026-08-25 after a spot-check found it; top_score/margin are the algorithm's original (uncorrected) output, kept for provenance."
 }
