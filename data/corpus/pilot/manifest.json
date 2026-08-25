@@ -1,0 +1,246 @@
+{
+  "books": [
+    {
+      "isbn": "9783781525566",
+      "dnb_title": "Herausforderungen und Zukunftsperspektiven für den Sachunterricht",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2023/12/14/file_4/9477172.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/61403",
+      "oa_title": "Herausforderungen und Zukunftsperspektiven für den Sachunterricht",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/7b5f52fc-2f0c-4982-bdc2-e7382261491b/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-NC-SA"
+    },
+    {
+      "isbn": "9783781523418",
+      "dnb_title": "Inklusion im schulischen Alltag",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2019/12/12/file_18/8789444.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/90064",
+      "oa_title": "Inklusion im schulischen Alltag",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/50cf16e2-bf72-4e8f-8394-453488589258/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-NC-ND"
+    },
+    {
+      "isbn": "9783110741681",
+      "dnb_title": "Gehörte Geschichten",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2023/05/18/file_22/9354395.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/61111",
+      "oa_title": "Gehörte Geschichten",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/b7cb59e0-061b-45d1-bab1-51143c6183d9/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-SA"
+    },
+    {
+      "isbn": "9783847427223",
+      "dnb_title": "Lokale Antworten auf aufenthaltsrechtliche Prekarität",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2024/05/02/file_3/9550547.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/63979",
+      "oa_title": "Lokale Antworten auf aufenthaltsrechtliche Prekarität",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/a1801140-57e3-4371-ae09-318654af81da/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY"
+    },
+    {
+      "isbn": "9781447324775",
+      "dnb_title": "Women's emancipation and civil society organisations",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2017/02/08/file_27/7088132.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/43961",
+      "oa_title": "Women's Emancipation and Civil Society Organisations",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/c67fdb09-b6f3-443e-bad8-785885a3e180/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-NC-ND"
+    },
+    {
+      "isbn": "9783837656909",
+      "dnb_title": "Hochschule auf Abstand",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2022/05/26/file_5/9161096.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/50823",
+      "oa_title": "Hochschule auf Abstand",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/62394231-f68e-4314-8790-f8759ec26e69/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY"
+    },
+    {
+      "isbn": "9783847407799",
+      "dnb_title": "Spiritualität und Selbstsorge",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2025/03/06/file_1/9845286.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/93600",
+      "oa_title": "Spiritualität und Seelsorge",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/801c4d12-143e-4cc2-85ba-25b6b8818877/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY"
+    },
+    {
+      "isbn": "9781472442857",
+      "dnb_title": "Gendered wars, gendered memories",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2018/09/12/file_12/8151974.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/47820",
+      "oa_title": "Gendered Wars, Gendered Memories",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9783110625486",
+      "dnb_title": "The internet of everything",
+      "dnb_toc_download_url": "http://d-nb.info/1187047074/04",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/43446",
+      "oa_title": "The Internet of Everything",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/255a184e-110f-4756-9acc-b9cbca62798e/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-NC-ND"
+    },
+    {
+      "isbn": "9783763951079",
+      "dnb_title": "Zugänge zu Inklusion",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage/2013/08/21/file_73/5254964.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/101929",
+      "oa_title": "Zugänge zu Inklusion",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/289f3dcc-14e7-45c4-b5a7-7c4231ff5067/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-SA"
+    },
+    {
+      "isbn": "9783110738698",
+      "dnb_title": "Korrigieren - eine Kulturtechnik",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2026/07/02/file_2/10159518.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/116664",
+      "oa_title": "Korrigieren – eine Kulturtechnik",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/ffd1a3d0-e9c6-49f5-8a74-4b7f206a5cc3/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY"
+    },
+    {
+      "isbn": "9783763919475",
+      "dnb_title": "Weiterbildung in der zweiten Lebenshälfte",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage/2008/01/16/file_67/2287459.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/101914",
+      "oa_title": "Weiterbildung in der zweiten Lebenshälfte",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/8fa85f0b-5586-4903-84f4-2529da832063/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-SA"
+    },
+    {
+      "isbn": "9783847430445",
+      "dnb_title": "Kinder- und Jugendhilfereport 2024",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2024/05/09/file_16/9553263.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/89794",
+      "oa_title": "Kinder- und Jugendhilfereport 2024",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/bdcc59e9-2c99-480a-ae41-4227d345565b/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY"
+    },
+    {
+      "isbn": "9783866490321",
+      "dnb_title": "Geschlechtertypisierungen im Kontext von Familie und Schule",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage/2007/09/03/file_92/2090627.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/54323",
+      "oa_title": "Geschlechtertypisierungen im Kontext von Familie und Schule",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/b0f78dd4-9685-4af2-895f-e9fc1f6d5484/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-NC-ND"
+    },
+    {
+      "isbn": "9783763936908",
+      "dnb_title": "Lernende Regionen - Netzwerke gestalten",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage/2008/11/22/file_17/2678064.pdf",
+      "oa_source": "oapen",
+      "oa_handle": "20.500.12657/101906",
+      "oa_title": "Lernende Regionen - Netzwerke gestalten",
+      "oa_pdf_url": "https://library.oapen.org/rest/bitstreams/87f27b2e-4223-40fe-9ff8-d3e2b4b65f55/retrieve",
+      "oa_pdf_resolved_via": "bitstream",
+      "oa_license_code": "CC-BY-SA"
+    },
+    {
+      "isbn": "9783830945024",
+      "dnb_title": "A systemic approach to school development",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2023/06/29/file_6/9377625.pdf",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/96558",
+      "oa_title": "A Systemic Approach to School Development",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9783756036240",
+      "dnb_title": "Soziale Herkunft, Karrierewege und Entscheidungspraxis in der Sozialgerichtsbarkeit",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2026/08/05/file_4/10184734.pdf",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/179068",
+      "oa_title": "Soziale Herkunft, Karrierewege und Entscheidungspraxis in der Sozialgerichtsbarkeit",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9783830940494",
+      "dnb_title": "Studierende - Medien - Universität",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2021/05/27/file_3/9033221.pdf",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/60187",
+      "oa_title": "Studierende – Medien – Universität. Einblicke in studentische Medienwelten",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9783866442184",
+      "dnb_title": "In search of meaning",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage/2009/09/21/file_26/3209581.pdf",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/85560",
+      "oa_title": "In Search of Meaning",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9782848323688",
+      "dnb_title": "La chanson dans la littérature d'enfance et de jeunesse",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2022/07/03/file_32/9182355.pdf",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/149227",
+      "oa_title": "La chanson dans la littérature d’enfance et de jeunesse",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9783830942313",
+      "dnb_title": "\"Langsam vermisse ich die Schule ...\"",
+      "dnb_toc_download_url": "https://d-nb.info/1211847691/04",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/63140",
+      "oa_title": "„Langsam vermisse ich die Schule ...\"",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    },
+    {
+      "isbn": "9783830938811",
+      "dnb_title": "Dealing with diversity",
+      "dnb_toc_download_url": "https://digitale-objekte.hbz-nrw.de/storage2/2020/03/05/file_3/8833828.pdf",
+      "oa_source": "doab",
+      "oa_handle": "20.500.12854/44573",
+      "oa_title": "Dealing with Diversity",
+      "oa_pdf_url": null,
+      "oa_pdf_resolved_via": null,
+      "oa_license_code": null
+    }
+  ]
+}

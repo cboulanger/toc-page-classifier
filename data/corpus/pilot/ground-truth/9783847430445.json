@@ -1,0 +1,10 @@
+{
+  "isbn": "9783847430445",
+  "status": "located",
+  "toc_start_index": 5,
+  "toc_end_index": 5,
+  "top_score": 0.6842,
+  "margin": 0.5455,
+  "method": "text_token_overlap",
+  "verified": false
+}

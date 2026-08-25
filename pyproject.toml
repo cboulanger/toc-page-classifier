@@ -1,0 +1,29 @@
+[project]
+name = "toc-page-classifier"
+version = "0.1.0"
+description = "A classifier for locating table-of-contents pages in full-text book PDFs, plus the ground-truth generation pipeline it's trained on (DNB Kataloganreicherung TOC scans cross-referenced against open-access full texts of the same books)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pypdf>=5.1.0",
+    "httpx>=0.27.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toc_page_classifier"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+]

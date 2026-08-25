@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+data/corpus/pilot/pdf/
+data/corpus/pilot/.oapen-cache/
+data/corpus/pilot/.doab-cache/
+data/corpus/pilot/.lobid-cache/
