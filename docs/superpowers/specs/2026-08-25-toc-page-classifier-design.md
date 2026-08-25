@@ -42,6 +42,19 @@ prediction -- that stays a `chapter-segmentation` concern) that is a
 DNB reference scan available, which is the normal case this repo needs to
 handle to be useful beyond its own ground-truth-generation pipeline.
 
+**Implemented.** See
+`docs/superpowers/plans/2026-08-25-toc-page-classifier-implementation.md`
+for the task-by-task build of this design, and `README.md`'s "Current
+status" section for the first measured leave-one-book-out result:
+`logistic_regression` (the default model) gets 3.9%/5.0% top-1/top-3
+range-hit rate, `gradient_boosting` gets 9.4%/9.4% -- and both are flat at
+0.0% on the entire open-access corpus, root-caused to a text-extraction
+gap in `_TOC_LINE_RE` (see that section and the comment above
+`_TOC_LINE_RE` in `text_features.py`). Neither model is production-useful
+yet; this is a first-measurement checkpoint that should inform which of
+the follow-up directions below (plus the newly-identified `_TOC_LINE_RE`
+fix) actually matter most, rather than an assumption made in the abstract.
+
 Out of scope for this document (named as follow-up directions, not
 designed here):
 

@@ -11,6 +11,11 @@ One script per pipeline stage, run in this order:
 4. `fetch_pairs.py` -- download both PDFs per matched pair.
 5. `locate_toc.py` -- locate the TOC page range in each full text, writing
    `data/corpus/pilot/ground-truth/`.
+6. `mine_toc_keywords.py` -- mine `data/toc_keywords.json` candidate
+   TOC-heading keywords from the merged ground truth corpus. Done
+   once/occasionally as the ground truth grows, not per-book.
+7. `train_toc_classifier.py` -- train and leave-one-book-out evaluate the
+   TOC-page classifier over the merged ground truth.
 
 Every script accepts `-h`/`--help`. **This file must be kept in sync with
 each script's own `--help` output whenever a script changes -- see
@@ -217,4 +222,61 @@ among a hundred shouldn't cost the rest their ground truth.
 
 options:
   -h, --help  show this help message and exit
+```
+
+## `mine_toc_keywords.py`
+
+Empirically mines candidate multilingual TOC-heading keywords (e.g. "contents",
+"inhaltsverzeichnis") from the merged ground truth corpus, grouped by each
+book's declared language, and writes `data/toc_keywords.candidates.json` for a
+human review pass -- never writes to the committed `data/toc_keywords.json`
+directly. Run once/occasionally, not part of the per-book pipeline above; safe
+to re-run whenever the ground truth corpus grows to pick up new languages or
+phrasings.
+
+```
+usage: mine_toc_keywords.py [-h] [--min-count MIN_COUNT]
+
+Empirically mines candidate TOC-heading keywords from the merged ground truth
+corpus, grouped by each book's declared language -- writes
+data/toc_keywords.candidates.json for a HUMAN REVIEW PASS. Never writes to
+data/toc_keywords.json directly: a frequent short phrase found here still
+needs a human judgment call on whether it's really a TOC-heading phrase (not,
+e.g., a frequent but unrelated short word). See
+docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's "Text /
+structural" section.
+
+options:
+  -h, --help            show this help message and exit
+  --min-count MIN_COUNT
+                        Minimum frequency to write as a candidate (default:
+                        2).
+```
+
+## `train_toc_classifier.py`
+
+Leave-one-book-out (LOBO) training/evaluation of the TOC-page classifier
+itself: merges both ground-truth sources
+(`src/toc_page_classifier/ground_truth.py`), extracts per-page layout
+(`layout_features.py`) and text (`text_features.py`) features, trains a
+page-level scorer (`LogisticRegression` by default, or gradient boosting),
+selects top-K non-overlapping candidate page ranges
+(`range_selection.py`), and reports top-1/top-3 range-hit rates overall and
+broken down by corpus and `extraction_type`. See `README.md`'s "Current
+status" section for the first measured result.
+
+```
+usage: train_toc_classifier.py [-h]
+                               [--chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR]
+                               [--model {logistic_regression,gradient_boosting}]
+
+Leave-one-book-out evaluation of the TOC-page classifier: per-page
+layout + text features, a page-level scorer (LogisticRegression or
+gradient boosting), and top-K non-overlapping candidate page-range output.
+See docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md.
+
+options:
+  -h, --help            show this help message and exit
+  --chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR
+  --model {logistic_regression,gradient_boosting}
 ```

@@ -43,10 +43,12 @@ ground truth for a TOC-page classifier.
    and the OA full text) for every matched pair.
 4. **Localization** (`cli/locate_toc.py`,
    `src/toc_page_classifier/locate_toc.py`): score every full-text page
-   against the DNB TOC scan's own text via word-token containment, and
+   against the DNB TOC scan's own text via word-token Ochiai overlap, and
    report the highest-scoring contiguous page range as the located TOC.
-5. **Classifier training** (not yet implemented): once enough located pairs
-   accumulate, train the actual TOC-page classifier on this ground truth.
+5. **Classifier training/evaluation** (`cli/train_toc_classifier.py`,
+   `src/toc_page_classifier/{layout_features,text_features,ground_truth,range_selection}.py`):
+   merges both ground-truth sources, trains a page-level scorer, and
+   reports leave-one-book-out top-1/top-3 range-hit rates.
 
 ## Current status (2026-08-25)
 
@@ -77,6 +79,54 @@ text-overlap locator:
 None of the 95 `located` entries have been manually verified beyond a
 couple of spot-checks -- `"verified": false` on every one.
 
+**Classifier: first measured LOBO result (`cli/train_toc_classifier.py`).**
+Trained and leave-one-book-out evaluated over the merged ground truth
+(89 `chapter_segmentation` books + 95 `dnb_located` pairs; 181 of them
+have at least one true TOC page and were scored):
+
+| Model | Top-1 | Top-3 |
+| --- | --- | --- |
+| `logistic_regression` (default) | 3.9% | 5.0% |
+| `gradient_boosting` | 9.4% | 9.4% |
+
+By corpus:
+
+| Corpus | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| copyrighted-scans (n=29) | 6.9% / 6.9% | 13.8% / 13.8% |
+| dnb_located (n=95) | 5.3% / 7.4% | 13.7% / 13.7% |
+| open-access (n=57) | 0.0% / 0.0% | 0.0% / 0.0% |
+
+Both models score a flat 0% on the entire open-access corpus. This is
+root-caused, not a mystery left dangling: `text_features.py`'s
+`_TOC_LINE_RE` requires 2+ consecutive dot/whitespace separator
+characters between a TOC entry's title and its page number, but
+`pypdf`'s text extraction on born-digital ("native") open-access PDFs
+collapses that visual gap to a single space (e.g. `"Foreword vii"`), so
+the regex essentially never matches on native-extraction text --
+measured directly at 0 of 80 TOC-line-shaped lines sampled across 6 real
+open-access books, versus 18.6%/9.1% match rates on the OCR'd
+`dnb_located`/`copyrighted-scans` corpora, where literal repeated
+separator glyphs do survive extraction (see the comment above
+`_TOC_LINE_RE` in `src/toc_page_classifier/text_features.py`).
+`gradient_boosting`'s higher headline numbers (9.4% vs. 3.9%) come
+entirely from doing better on the corpora where that text feature
+already fires (13.7-13.8% there, vs. `logistic_regression`'s 5.3-6.9%) --
+it is not solving the open-access blind spot either, it is still 0.0%
+there too.
+
+Neither model is anywhere close to production-useful at these hit
+rates -- this is a first-measurement checkpoint, not a finished
+deliverable. The single most actionable next step is fixing
+`_TOC_LINE_RE` to also match a single-space-collapsed title/page-number
+gap (e.g. a minimum-gap-width heuristic derived from some other signal,
+or a looser separator requirement paired with a compensating precision
+check), since that -- not model choice -- is what suppresses the
+open-access half of the corpus to zero. The design spec's already-listed
+deferred directions (a small LM/VLM finetune, per-`extraction_type`
+calibration) remain candidates too, but should now be weighed against
+this more specific, measured gap.
+
 **Known gaps / not yet done:**
 
 - Discovery only checks ISBNs already known to OAPEN/DOAB; it never
@@ -85,8 +135,9 @@ couple of spot-checks -- `"verified": false` on every one.
   means. In practice this hasn't been a limiting factor (100/100 found
   entirely via live per-ISBN lookups).
 - No OCR/vision fallback for the 3 `reference_has_no_text` books.
-- No classifier training code yet -- this repo is currently at the
-  ground-truth-generation stage.
+- The classifier's text features are effectively blind on native-text
+  (non-OCR) PDFs -- see the open-access result above and
+  `_TOC_LINE_RE`'s known limitation in `text_features.py`.
 
 ## Development
 
