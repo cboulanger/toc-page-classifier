@@ -31,3 +31,18 @@ def test_select_topk_ranges_respects_max_window_size():
     ranges = select_topk_ranges(scores, k=1, max_window=4)
     start, end, _ = ranges[0]
     assert end - start + 1 <= 4
+
+
+def test_select_topk_ranges_tie_break_prefers_wider_window():
+    # Uniform scores -- every window of every length ties on mean score, so
+    # the tie-break (not the score) decides the winner. Regression test for
+    # a real bug: sorting candidates by score alone breaks ties by
+    # generation order (narrowest windows first), so a 1-page window would
+    # silently win over an equally-scored wider window. The widest window
+    # allowed by max_window must win instead.
+    scores = [0.5, 0.5, 0.5, 0.5]
+    ranges = select_topk_ranges(scores, k=1, max_window=4)
+    assert len(ranges) == 1
+    start, end, score = ranges[0]
+    assert (start, end) == (0, 3)
+    assert score == 0.5

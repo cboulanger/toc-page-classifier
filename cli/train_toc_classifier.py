@@ -32,7 +32,7 @@ _TOP_K = 3
 
 def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
     """One row per page: {"book_key", "corpus", "extraction_type",
-    "features": {...}, "label": bool, "weight": float}."""
+    "page_index", "features": {...}, "label": bool, "weight": float}."""
     table = []
     for row in rows:
         pages = page_texts(row.pdf_path)
@@ -46,18 +46,28 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
             if row.toc_start_index is not None
             else set()
         )
+        dropped_pages = []
         for page_index in range(total_pages):
             if page_index not in layout:
+                dropped_pages.append(page_index)
                 continue  # pdfplumber found no page geometry (should not normally happen)
             features = {**layout[page_index], **text[page_index]}
             table.append({
                 "book_key": row.key,
                 "corpus": row.corpus,
                 "extraction_type": row.extraction_type,
+                "page_index": page_index,
                 "features": features,
                 "label": page_index in toc_indices,
                 "weight": row.weight,
             })
+        if dropped_pages:
+            print(
+                f"WARNING: {row.key}: pdfplumber found no page geometry for "
+                f"{len(dropped_pages)}/{total_pages} page(s) {dropped_pages} -- "
+                f"dropped from the feature table (pypdf and pdfplumber disagreed "
+                f"on page count/content, or the page has no extractable geometry)."
+            )
     return table
 
 

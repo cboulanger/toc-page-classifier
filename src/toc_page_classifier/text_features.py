@@ -20,6 +20,23 @@ DEFAULT_KEYWORDS_PATH = str(
 # separator characters so ordinary prose sentences ending in a number don't
 # false-positive. Page may be arabic or a lowercase/uppercase roman
 # numeral (front-matter pagination).
+#
+# KNOWN LIMITATION (found while diagnosing cli/train_toc_classifier.py's
+# first real LOBO run -- see docs/superpowers/plans/2026-08-25-toc-page-
+# classifier-implementation.md's Task 6/7): this 2+-separator requirement
+# assumes the title/page-number gap survives text extraction as multiple
+# literal dot/space characters. For many born-digital ("native") PDFs, the
+# visual gap is achieved via absolute glyph positioning rather than
+# repeated separator glyphs, and pypdf's page_texts() collapses it to a
+# single space (e.g. "Foreword vii", "Acknowledgements xi") -- so this
+# regex matches 0% of real TOC lines on such PDFs (measured: 0/80 sampled
+# TOC lines across 6 open-access-corpus books, vs. 9-19% for the scanned/
+# OCR'd corpora, where literal repeated separators do survive extraction).
+# This alone accounts for the open-access corpus's near-zero LOBO hit rate.
+# Not fixed here -- flagging for whoever tunes text_features.py next
+# (e.g. normalizing runs of whitespace, or a separate single-space-aware
+# pattern for native PDFs) rather than changing matching behavior in this
+# pass.
 _TOC_LINE_RE = re.compile(
     r"^(?P<title>.{3,120}?)[.\s]{2,}(?P<page>\d{1,4}|[ivxlcdm]{1,6}|[IVXLCDM]{1,6})\s*$"
 )
