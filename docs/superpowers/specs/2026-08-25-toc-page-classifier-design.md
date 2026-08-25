@@ -15,7 +15,8 @@ just the subset lucky enough to have a DNB cross-reference.
 
 Constraints, from the requesting conversation:
 
-- Small, local, fast, GPU-capable -- not a hosted-API dependency.
+- Small, local, fast, CPU-capable -- not a hosted-API dependency, and must
+  not require a GPU to run.
 - OCR is a prior pipeline step (making sure a PDF has a usable text
   layer), never something this classifier does itself.
 - A separate, related pilot already exists in the `chapter-segmentation`
