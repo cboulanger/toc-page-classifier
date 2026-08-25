@@ -70,7 +70,7 @@ def main() -> None:
             "toc_end_index": location.end_index,
             "top_score": round(location.top_score, 4),
             "margin": round(location.margin, 4),
-            "method": "text_token_overlap",
+            "method": "text_token_containment",
             "verified": False,
         }, indent=2))
 

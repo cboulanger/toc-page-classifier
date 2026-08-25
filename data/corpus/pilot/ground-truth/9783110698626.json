@@ -2,9 +2,9 @@
   "isbn": "9783110698626",
   "status": "located",
   "toc_start_index": 7,
-  "toc_end_index": 8,
-  "top_score": 0.4658,
-  "margin": 0.2493,
-  "method": "text_token_overlap",
+  "toc_end_index": 9,
+  "top_score": 0.5908,
+  "margin": 0.3857,
+  "method": "text_token_containment",
   "verified": false
 }

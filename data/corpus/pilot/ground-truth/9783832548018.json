@@ -2,9 +2,9 @@
   "isbn": "9783832548018",
   "status": "located",
   "toc_start_index": 10,
-  "toc_end_index": 11,
-  "top_score": 0.4599,
-  "margin": 0.2528,
-  "method": "text_token_overlap",
+  "toc_end_index": 12,
+  "top_score": 0.5399,
+  "margin": 0.2481,
+  "method": "text_token_containment",
   "verified": false
 }

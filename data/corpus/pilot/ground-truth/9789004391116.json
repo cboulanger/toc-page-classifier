@@ -2,9 +2,9 @@
   "isbn": "9789004391116",
   "status": "located",
   "toc_start_index": 5,
-  "toc_end_index": 5,
-  "top_score": 0.8462,
-  "margin": 0.669,
-  "method": "text_token_overlap",
+  "toc_end_index": 6,
+  "top_score": 0.599,
+  "margin": 0.3887,
+  "method": "text_token_containment",
   "verified": false
 }

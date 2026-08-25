@@ -2,9 +2,9 @@
   "isbn": "9789004446083",
   "status": "located",
   "toc_start_index": 7,
-  "toc_end_index": 9,
-  "top_score": 0.388,
-  "margin": 0.1977,
-  "method": "text_token_overlap",
+  "toc_end_index": 10,
+  "top_score": 0.5611,
+  "margin": 0.3285,
+  "method": "text_token_containment",
   "verified": false
 }

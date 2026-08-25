@@ -2,9 +2,9 @@
   "isbn": "9783837672305",
   "status": "located",
   "toc_start_index": 5,
-  "toc_end_index": 6,
-  "top_score": 0.5278,
-  "margin": 0.3681,
-  "method": "text_token_overlap",
+  "toc_end_index": 7,
+  "top_score": 0.6175,
+  "margin": 0.4545,
+  "method": "text_token_containment",
   "verified": false
 }

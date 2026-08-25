@@ -2,9 +2,9 @@
   "isbn": "9789462703834",
   "status": "located",
   "toc_start_index": 4,
-  "toc_end_index": 4,
-  "top_score": 0.6714,
-  "margin": 0.4028,
-  "method": "text_token_overlap",
+  "toc_end_index": 5,
+  "top_score": 0.6592,
+  "margin": 0.429,
+  "method": "text_token_containment",
   "verified": false
 }

@@ -2,9 +2,9 @@
   "isbn": "9783593515106",
   "status": "located",
   "toc_start_index": 5,
-  "toc_end_index": 7,
-  "top_score": 0.1161,
-  "margin": 0.0044,
-  "method": "text_token_overlap",
+  "toc_end_index": 6,
+  "top_score": 0.2057,
+  "margin": 0.023,
+  "method": "text_token_containment",
   "verified": false
 }

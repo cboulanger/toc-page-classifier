@@ -2,9 +2,9 @@
   "isbn": "9780993144981",
   "status": "located",
   "toc_start_index": 6,
-  "toc_end_index": 6,
-  "top_score": 0.7159,
-  "margin": 0.4545,
-  "method": "text_token_overlap",
+  "toc_end_index": 7,
+  "top_score": 0.6652,
+  "margin": 0.4261,
+  "method": "text_token_containment",
   "verified": false
 }

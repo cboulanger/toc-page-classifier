@@ -2,9 +2,9 @@
   "isbn": "9783111303864",
   "status": "located",
   "toc_start_index": 7,
-  "toc_end_index": 7,
-  "top_score": 0.7682,
-  "margin": 0.5422,
-  "method": "text_token_overlap",
+  "toc_end_index": 8,
+  "top_score": 0.6741,
+  "margin": 0.4068,
+  "method": "text_token_containment",
   "verified": false
 }

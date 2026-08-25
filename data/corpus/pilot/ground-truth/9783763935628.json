@@ -1,10 +1,10 @@
 {
   "isbn": "9783763935628",
   "status": "located",
-  "toc_start_index": 3,
+  "toc_start_index": 2,
   "toc_end_index": 5,
-  "top_score": 0.392,
-  "margin": 0.2531,
-  "method": "text_token_overlap",
+  "top_score": 0.4443,
+  "margin": 0.2451,
+  "method": "text_token_containment",
   "verified": false
 }

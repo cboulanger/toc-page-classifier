@@ -2,9 +2,9 @@
   "isbn": "9783837678253",
   "status": "located",
   "toc_start_index": 5,
-  "toc_end_index": 5,
-  "top_score": 0.7879,
-  "margin": 0.5341,
-  "method": "text_token_overlap",
+  "toc_end_index": 6,
+  "top_score": 0.6904,
+  "margin": 0.5142,
+  "method": "text_token_containment",
   "verified": false
 }

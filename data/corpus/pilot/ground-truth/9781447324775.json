@@ -2,9 +2,9 @@
   "isbn": "9781447324775",
   "status": "located",
   "toc_start_index": 5,
-  "toc_end_index": 5,
-  "top_score": 0.6703,
-  "margin": 0.3581,
-  "method": "text_token_overlap",
+  "toc_end_index": 6,
+  "top_score": 0.6595,
+  "margin": 0.4407,
+  "method": "text_token_containment",
   "verified": false
 }

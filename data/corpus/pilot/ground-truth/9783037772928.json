@@ -1,10 +1,10 @@
 {
   "isbn": "9783037772928",
   "status": "located",
-  "toc_start_index": 7,
-  "toc_end_index": 8,
-  "top_score": 0.3621,
-  "margin": 0.1164,
-  "method": "text_token_overlap",
+  "toc_start_index": 144,
+  "toc_end_index": 148,
+  "top_score": 0.2998,
+  "margin": 0.0324,
+  "method": "text_token_containment",
   "verified": false
 }

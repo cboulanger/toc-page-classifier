@@ -2,9 +2,9 @@
   "isbn": "9781800794344",
   "status": "located",
   "toc_start_index": 16,
-  "toc_end_index": 16,
-  "top_score": 0.7347,
-  "margin": 0.4738,
-  "method": "text_token_overlap",
+  "toc_end_index": 17,
+  "top_score": 0.6803,
+  "margin": 0.4271,
+  "method": "text_token_containment",
   "verified": false
 }

@@ -3,8 +3,8 @@
   "status": "located",
   "toc_start_index": 5,
   "toc_end_index": 6,
-  "top_score": 0.625,
-  "margin": 0.4699,
-  "method": "text_token_overlap",
+  "top_score": 0.7488,
+  "margin": 0.551,
+  "method": "text_token_containment",
   "verified": false
 }

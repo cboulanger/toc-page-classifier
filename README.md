@@ -43,7 +43,7 @@ ground truth for a TOC-page classifier.
    and the OA full text) for every matched pair.
 4. **Localization** (`cli/locate_toc.py`,
    `src/toc_page_classifier/locate_toc.py`): score every full-text page
-   against the DNB TOC scan's own text via word-token Jaccard overlap, and
+   against the DNB TOC scan's own text via word-token containment, and
    report the highest-scoring contiguous page range as the located TOC.
 5. **Classifier training** (not yet implemented): once enough located pairs
    accumulate, train the actual TOC-page classifier on this ground truth.

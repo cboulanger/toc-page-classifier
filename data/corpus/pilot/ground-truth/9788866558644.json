@@ -1,10 +1,10 @@
 {
   "isbn": "9788866558644",
   "status": "located",
-  "toc_start_index": 8,
+  "toc_start_index": 7,
   "toc_end_index": 11,
-  "top_score": 0.2957,
-  "margin": 0.1538,
-  "method": "text_token_overlap",
+  "top_score": 0.4682,
+  "margin": 0.3126,
+  "method": "text_token_containment",
   "verified": false
 }

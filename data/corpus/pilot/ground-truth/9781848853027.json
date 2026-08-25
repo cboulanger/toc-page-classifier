@@ -2,9 +2,9 @@
   "isbn": "9781848853027",
   "status": "located",
   "toc_start_index": 7,
-  "toc_end_index": 10,
-  "top_score": 0.2537,
-  "margin": 0.1451,
-  "method": "text_token_overlap",
+  "toc_end_index": 8,
+  "top_score": 0.4378,
+  "margin": 0.0447,
+  "method": "text_token_containment",
   "verified": false
 }

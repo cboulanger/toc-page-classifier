@@ -83,14 +83,34 @@ treating every auto-located label as equally certain. Exact weighting
 function (e.g. a clipped linear map of `margin` into `[0.3, 1.0]`) is an
 implementation detail to tune empirically, not fixed here.
 
-**Spot-check before large-scale training:** manually view ~10 DNB-located
-pairs (via the actual PDF pages, not just the JSON) before trusting the
-merged corpus at scale. This is cheap insurance, not a new verification
-pipeline -- chapter-segmentation's own similar auto-located ground truth
-once had a real labeling bug slip through silently (a duplicated
-`"Inhalt"` chapter entry overwriting a true `toc` label), so an
-entirely-unverified 95-book corpus deserves at least a sanity pass before
-it drives model training.
+**Spot-check done, and it found a real bug -- since fixed.** A 20%
+hand-inspected sample (19 of 95 DNB-located books) found a **47% error
+rate**: 8 of 9 wrong cases shared the same root cause, a systematic
+one-page truncation of the true TOC range. Root-caused to `locate_toc.py`'s
+scoring formula -- symmetric Jaccard overlap penalized a genuine but thin
+trailing TOC page because the reference's *combined* vocabulary (unioned
+across all reference pages) is much larger than that one page's own
+vocabulary, pushing its score below the range-expansion threshold even
+though every one of its own tokens matched the reference. Critically,
+`margin` did not predict this failure -- some truncated books had high
+margins -- so the weighting scheme above would not have caught it.
+
+Fixed in two steps, both now shipped in `locate_toc.py`: the per-page score
+became an Ochiai coefficient (`|intersection| / sqrt(|candidate| *
+|reference|)`, which rewards a thin-but-genuine page without letting a
+tiny incidental match win by raw fraction alone -- an intermediate plain-
+containment attempt fixed the truncation but introduced exactly that new
+failure); and `select_toc_range` moved from expanding outward from a peak
+while neighbors clear a tunable score-ratio threshold, to picking the
+best-scoring contiguous window of a *known* fixed length -- the DNB
+reference scan's own page count, which was found to match the true TOC
+range's length exactly in all 18 hand-verified cases (same edition, same
+physical page count). This removes the threshold entirely rather than
+re-tuning it. Re-validated against all 18 hand-verified cases: 18/18 exact
+matches. The full 95-book corpus was regenerated with the fix; the
+lowest-margin entries dropped from a wide, bug-correlated spread to just 4
+books under `margin=0.05`, worth a light manual look but no longer a sign
+of a systematic defect.
 
 ## Features
 
