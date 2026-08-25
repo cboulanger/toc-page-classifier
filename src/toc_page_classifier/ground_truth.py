@@ -57,6 +57,13 @@ def load_chapter_segmentation_rows(chapter_segmentation_dir: Path) -> list[Groun
     page-label sequence), so it is included, not skipped."""
     rows = []
     corpus_root = chapter_segmentation_dir / "evaluation" / "corpus"
+    if not corpus_root.is_dir():
+        raise FileNotFoundError(
+            f"chapter-segmentation evaluation corpus not found at {corpus_root} -- "
+            f"expected a sibling checkout of chapter-segmentation at "
+            f"{chapter_segmentation_dir}, or set the CHAPTER_SEGMENTATION_DIR "
+            f"environment variable to point at one."
+        )
     for corpus in _CHAPTER_SEGMENTATION_CORPORA:
         corpus_dir = corpus_root / corpus
         manifest_path = corpus_dir / "manifest.json"

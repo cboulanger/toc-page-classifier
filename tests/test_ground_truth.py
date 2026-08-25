@@ -81,6 +81,11 @@ def test_load_chapter_segmentation_rows_includes_null_toc_and_excludes_missing_k
     assert by_key["2222222222"].extraction_type == "scan"
 
 
+def test_load_chapter_segmentation_rows_raises_when_corpus_dir_missing():
+    with pytest.raises(FileNotFoundError):
+        load_chapter_segmentation_rows(Path("/some/nonexistent/path"))
+
+
 def test_load_dnb_located_rows_excludes_non_located_and_maps_margin_to_weight(dnb_dirs):
     rows = load_dnb_located_rows()
     keys = {r.key for r in rows}
