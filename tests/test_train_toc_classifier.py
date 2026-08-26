@@ -93,3 +93,9 @@ def test_evaluate_leave_one_book_out_top1_requires_full_coverage_top3_allows_it(
     # for 2nd/3rd highest score behind page 0's 0.95 false-positive peak, so
     # the best-scored true page ranks 2nd overall.
     assert result["best_true_page_rank"] == 2
+    # The rank-1 window is the lone page-0 peak, which doesn't intersect the
+    # true set {1, 2} at all -- a full miss even under the loose overlap
+    # definition. But rank 2 is the {1, 2} window itself, so top3_overlap
+    # (which checks all k windows) is True, same as top3_hit here.
+    assert result["top1_overlap"] is False
+    assert result["top3_overlap"] is True

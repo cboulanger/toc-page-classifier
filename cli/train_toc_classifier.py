@@ -92,7 +92,14 @@ def evaluate_leave_one_book_out(table: list[dict], model_name: str) -> dict:
     selection -- it distinguishes "the scorer ranked a true TOC page near
     the top but select_topk_ranges' contiguous-window logic didn't
     capture it" (small rank, top1/top3 miss) from "the scorer never gave
-    any true TOC page a competitive score at all" (large rank)."""
+    any true TOC page a competitive score at all" (large rank).
+
+    Also returns top1_overlap/top3_overlap: a looser hit definition that
+    only requires the selected window to intersect the true TOC page set
+    (not fully contain it, like top1_hit/top3_hit do). The gap between
+    top1_overlap and top1_hit isolates "found the right neighborhood but
+    didn't cover every true page" from "missed the neighborhood
+    entirely"."""
     book_keys = sorted({r["book_key"] for r in table})
     per_book = []
     for held_out in book_keys:
@@ -115,6 +122,8 @@ def evaluate_leave_one_book_out(table: list[dict], model_name: str) -> dict:
         ranges = select_topk_ranges(scores, k=_TOP_K)
         top1_hit = bool(ranges) and true_indices <= set(range(ranges[0][0], ranges[0][1] + 1))
         top3_hit = any(true_indices <= set(range(s, e + 1)) for s, e, _ in ranges)
+        top1_overlap = bool(ranges) and bool(true_indices & set(range(ranges[0][0], ranges[0][1] + 1)))
+        top3_overlap = any(true_indices & set(range(s, e + 1)) for s, e, _ in ranges)
 
         ranked_page_indices = [
             i for i, _ in sorted(enumerate(scores), key=lambda pair: pair[1], reverse=True)
@@ -127,6 +136,8 @@ def evaluate_leave_one_book_out(table: list[dict], model_name: str) -> dict:
             "extraction_type": test_rows[0]["extraction_type"],
             "top1_hit": top1_hit,
             "top3_hit": top3_hit,
+            "top1_overlap": top1_overlap,
+            "top3_overlap": top3_overlap,
             "best_true_page_rank": best_true_page_rank,
         })
 
@@ -153,6 +164,11 @@ def main() -> int:
     print(f"Books evaluated (with >=1 true TOC page): {len(per_book)}")
     print(f"Top-1 hit rate: {_hit_rate(per_book, 'top1_hit'):.1%}")
     print(f"Top-3 hit rate: {_hit_rate(per_book, 'top3_hit'):.1%}")
+    print(
+        f"Top-1 overlap rate: {_hit_rate(per_book, 'top1_overlap'):.1%} "
+        f"(loose: any true page in the window, vs. full-coverage hit above)"
+    )
+    print(f"Top-3 overlap rate: {_hit_rate(per_book, 'top3_overlap'):.1%}")
     print()
     ranks = sorted(r["best_true_page_rank"] for r in per_book)
     n = len(ranks)
