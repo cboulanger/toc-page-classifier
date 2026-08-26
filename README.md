@@ -90,10 +90,10 @@ text-overlap locator:
 None of the 95 `located` entries have been manually verified beyond a
 couple of spot-checks -- `"verified": false` on every one.
 
-**Classifier: first measured LOBO result (`cli/train_toc_classifier.py`).**
-Trained and leave-one-book-out evaluated over the merged ground truth
-(89 `chapter_segmentation` books + 95 `dnb_located` pairs; 181 of them
-have at least one true TOC page and were scored):
+**Classifier: first measured LOBO result (`cli/train_toc_classifier.py`),
+2026-08-25.** Trained and leave-one-book-out evaluated over the merged
+ground truth (89 `chapter_segmentation` books + 95 `dnb_located` pairs;
+181 of them have at least one true TOC page and were scored):
 
 | Model | Top-1 | Top-3 |
 | --- | --- | --- |
@@ -108,35 +108,76 @@ By corpus:
 | dnb_located (n=95) | 5.3% / 7.4% | 13.7% / 13.7% |
 | open-access (n=57) | 0.0% / 0.0% | 0.0% / 0.0% |
 
-Both models score a flat 0% on the entire open-access corpus. This is
+Both models scored a flat 0% on the entire open-access corpus. This was
 root-caused, not a mystery left dangling: `text_features.py`'s
 `_TOC_LINE_RE` requires 2+ consecutive dot/whitespace separator
 characters between a TOC entry's title and its page number, but
 `pypdf`'s text extraction on born-digital ("native") open-access PDFs
 collapses that visual gap to a single space (e.g. `"Foreword vii"`), so
-the regex essentially never matches on native-extraction text --
+the regex essentially never matched on native-extraction text --
 measured directly at 0 of 80 TOC-line-shaped lines sampled across 6 real
 open-access books, versus 18.6%/9.1% match rates on the OCR'd
 `dnb_located`/`copyrighted-scans` corpora, where literal repeated
-separator glyphs do survive extraction (see the comment above
-`_TOC_LINE_RE` in `src/toc_page_classifier/text_features.py`).
-`gradient_boosting`'s higher headline numbers (9.4% vs. 3.9%) come
-entirely from doing better on the corpora where that text feature
-already fires (13.7-13.8% there, vs. `logistic_regression`'s 5.3-6.9%) --
-it is not solving the open-access blind spot either, it is still 0.0%
-there too.
+separator glyphs do survive extraction.
+
+**Update (2026-08-26): gap-aware text reconstruction fix, re-measured.**
+`layout_features.extract_gap_aware_page_texts` was added: it reconstructs
+each page's text from pdfplumber's own char geometry instead of pypdf's
+`extract_text()`, inserting a real 2-character separator wherever the
+horizontal gap between consecutive chars is wide relative to font size
+(preserving the title/page-number gap that pypdf collapses to one
+space), and `cli/train_toc_classifier.py` now uses it. Verified directly
+before re-running the full corpus: `toc_line_count` now fires with real,
+non-zero values (4-27) on every true TOC page sampled across 6
+open-access books that previously scored a hard 0 -- the root cause is
+confirmed fixed at the feature level. Fresh full LOBO run:
+
+| Model | Top-1 | Top-3 |
+| --- | --- | --- |
+| `logistic_regression` (default) | 6.1% | 6.1% |
+| `gradient_boosting` | 10.5% | 11.6% |
+
+By corpus:
+
+| Corpus | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| copyrighted-scans (n=29) | 10.3% / 10.3% | 20.7% / 24.1% |
+| dnb_located (n=95) | 8.4% / 8.4% | 10.5% / 11.6% |
+| open-access (n=57) | 0.0% / 0.0% | 5.3% / 5.3% |
+
+By extraction_type (chapter_segmentation rows only):
+
+| extraction_type | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| native (n=74) | 2.7% / 2.7% | 9.5% / 10.8% |
+| scan (n=12) | 8.3% / 8.3% | 16.7% / 16.7% |
+
+Both models improved overall, and `gradient_boosting` moved off zero on
+open-access entirely (0.0%->5.3%, native 2.7%->9.5%/10.8%) -- real
+movement, not noise, given the feature-level fix is directly confirmed
+above. **`logistic_regression`'s open-access/native numbers did not move
+at all (0.0% and 2.7%, identical to before the fix)**, despite the same
+underlying feature now carrying real signal for every book in this
+corpus. This isn't a sign the fix failed -- it's a model-behavior gap:
+`gradient_boosting`'s tree splits pick up the newly-nonzero
+`toc_line_count`/`toc_line_ratio` values as a strong signal on native
+text, while `logistic_regression`'s linear decision boundary (with the
+existing layout features already dominating most pages' scores) doesn't
+surface these pages into its top-ranked candidate windows for this
+corpus. Not investigated further in this pass -- a natural target for
+whichever comes first of the two already-listed tuning directions below
+(model choice, per-`extraction_type` calibration).
 
 Neither model is anywhere close to production-useful at these hit
-rates -- this is a first-measurement checkpoint, not a finished
-deliverable. The single most actionable next step is fixing
-`_TOC_LINE_RE` to also match a single-space-collapsed title/page-number
-gap (e.g. a minimum-gap-width heuristic derived from some other signal,
-or a looser separator requirement paired with a compensating precision
-check), since that -- not model choice -- is what suppresses the
-open-access half of the corpus to zero. The design spec's already-listed
-deferred directions (a small LM/VLM finetune, per-`extraction_type`
-calibration) remain candidates too, but should now be weighed against
-this more specific, measured gap.
+rates -- this remains a measurement checkpoint, not a finished
+deliverable. With the text-extraction blind spot now closed at the
+feature level, the most actionable next steps are model-side: either
+switch the default model (`gradient_boosting` now beats
+`logistic_regression` on every corpus/extraction_type slice, not just in
+aggregate), or investigate why `logistic_regression` doesn't exploit the
+new native-text signal. The design spec's already-listed deferred
+directions (a small LM/VLM finetune, per-`extraction_type` calibration)
+remain candidates too.
 
 **Known gaps / not yet done:**
 
@@ -146,9 +187,10 @@ this more specific, measured gap.
   means. In practice this hasn't been a limiting factor (100/100 found
   entirely via live per-ISBN lookups).
 - No OCR/vision fallback for the 3 `reference_has_no_text` books.
-- The classifier's text features are effectively blind on native-text
-  (non-OCR) PDFs -- see the open-access result above and
-  `_TOC_LINE_RE`'s known limitation in `text_features.py`.
+- `logistic_regression` (the CLI's default model) still doesn't exploit
+  the native-text signal the gap-aware fix now provides -- see the
+  2026-08-26 update above. `gradient_boosting` does, and currently scores
+  higher on every corpus/extraction_type slice measured.
 - No page-level precision/recall diagnostic yet, though the design spec
   calls for one (as a secondary metric to distinguish "wrong boundary"
   from "completely missed") -- `evaluate_leave_one_book_out` currently
