@@ -47,14 +47,11 @@ ground truth for a TOC-page classifier.
    report the highest-scoring contiguous page range as the located TOC.
 5. **Keyword mining** (`cli/mine_toc_keywords.py`, run once/occasionally,
    not on every commit): empirically scans the merged ground truth for
-   frequent TOC-heading phrases per language, writing candidates to a
-   scratch file for a human review pass before merging into
+   frequent TOC-heading phrases per language, writing candidates to `data/toc_keywords.candidates.json` for a human review pass before merging into
    `data/toc_keywords.json`. Already run once against the full merged
    corpus (2026-08-25): every frequent candidate found was already in the
    hand-seeded list, and everything else was noise (page numbers, OCR
-   garbage, one unrelated word) -- a real, verified negative result, not
-   a skipped step. `data/toc_keywords.json` itself is unchanged from its
-   original hand-seeded version as a result.
+   garbage, one unrelated word).
 6. **Classifier training/evaluation** (`cli/train_toc_classifier.py`,
    `src/toc_page_classifier/{layout_features,text_features,ground_truth,range_selection}.py`):
    merges both ground-truth sources, trains a page-level scorer, and
