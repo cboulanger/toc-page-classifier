@@ -6,6 +6,7 @@ docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's
 "Geometry" section."""
 
 import statistics
+from itertools import pairwise
 from pathlib import Path
 
 import pdfplumber
@@ -51,6 +52,55 @@ def _group_chars_into_lines(chars: list[dict]) -> list[list[dict]]:
         else:
             lines.append([char])
     return lines
+
+
+# Gap-to-font-size ratios used by _reconstruct_line_text to classify the
+# horizontal space between two consecutive chars on the same line. Tuned
+# to distinguish three cases: kerning within a word (no space), an
+# ordinary space between words (one space), and the wide title/page-number
+# gap in a TOC entry -- normally rendered via absolute glyph positioning on
+# native PDFs, with no literal dot-leader characters pypdf's extract_text()
+# could preserve, which is why that gap collapses to a single space there
+# (see the comment above _TOC_LINE_RE in text_features.py for the full
+# diagnosis this fixes).
+_WORD_GAP_RATIO = 0.3
+_WIDE_GAP_RATIO = 3.0
+
+
+def _reconstruct_line_text(line: list[dict]) -> str:
+    """Joins one line's pdfplumber chars (each needs `text`, `x0`, `x1`,
+    `size`) into a string, left to right. A gap below _WORD_GAP_RATIO of
+    the local font size is treated as kerning (no space inserted); a gap
+    at or above _WIDE_GAP_RATIO is treated as a TOC-style dot-leader/tab-stop
+    gap and gets a 2-char separator (satisfying _TOC_LINE_RE's requirement)
+    instead of pypdf's single-space normalization; everything in between
+    gets one ordinary space."""
+    ordered = sorted(line, key=lambda c: c["x0"])
+    parts = [ordered[0]["text"]]
+    for prev, cur in pairwise(ordered):
+        gap = cur["x0"] - prev["x1"]
+        font_size = (prev["size"] + cur["size"]) / 2 or 1.0
+        ratio = gap / font_size
+        if ratio >= _WIDE_GAP_RATIO:
+            parts.append("  ")
+        elif ratio >= _WORD_GAP_RATIO:
+            parts.append(" ")
+        parts.append(cur["text"])
+    return "".join(parts)
+
+
+def extract_gap_aware_page_texts(pdf_path: str | Path) -> dict[int, str]:
+    """Per-page text reconstructed from pdfplumber char geometry via
+    _reconstruct_line_text, keyed by 0-based page index. Use this instead
+    of pdf_text.page_texts() (pypdf) as extract_text_features's input --
+    it preserves the wide title/page-number gap in native-PDF TOC lines
+    that pypdf's extraction collapses to a single space."""
+    texts: dict[int, str] = {}
+    with pdfplumber.open(str(pdf_path)) as pdf:
+        for page_index, page in enumerate(pdf.pages):
+            lines = _group_chars_into_lines(page.chars)
+            texts[page_index] = "\n".join(_reconstruct_line_text(line) for line in lines)
+    return texts
 
 
 def extract_page_features(pdf_path: str | Path) -> dict[int, dict[str, float]]:
