@@ -1,14 +1,16 @@
 """Aggregates per-page TOC-likelihood scores into ranked, non-overlapping
 candidate page ranges -- the "range selection" step of
 docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's "Model"
-section. Window lengths 1-4 match the observed TOC-length distribution in
-the merged ground truth (mean 2.8 pages, max 9 -- 1-4 covers the large
-majority; a book with a longer real TOC will still be found by an
-overlapping shorter window landing inside it, just not with perfect page
-coverage)."""
+section. Window lengths 1-6 match the observed TOC-span distribution in
+the merged ground truth (181 books: spans of 1-6 pages cover 179/181
+(98.9%); only two outliers, at 9 and 17 pages, fall outside that range --
+measured 2026-08-27 while diagnosing why top1_hit stayed near 10% despite
+the page-level scorer ranking a true TOC page first in ~94% of books. A
+book with a longer real TOC will still be found by an overlapping shorter
+window landing inside it, just not with perfect page coverage)."""
 
 _DEFAULT_MIN_WINDOW = 1
-_DEFAULT_MAX_WINDOW = 4
+_DEFAULT_MAX_WINDOW = 6
 
 
 def select_topk_ranges(
