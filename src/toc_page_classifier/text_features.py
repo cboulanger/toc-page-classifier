@@ -54,8 +54,16 @@ _IMPRINT_LINE_RE = re.compile(
 # non-blank line).
 _SEPARATOR_RUN_RE = re.compile(r"[.\s]{2,}")
 
+# toc_line_count (raw match count) was removed as a feature after the
+# 2026-08-26 gap-aware-text-reconstruction re-measurement: a dense
+# bibliography/index/footnote page can rack up MORE raw matches than a real
+# TOC page purely by having more total lines (e.g. one sampled book's page
+# 100 scored toc_line_count=41 vs. its true TOC pages' 17-27), while
+# toc_line_ratio -- matches normalized by the number of structurally
+# candidate lines on that page -- cleanly separated the same pages (0.11-0.16
+# vs. 0.85-0.96). Only the ratio is exposed as a feature now.
+
 TEXT_FEATURE_NAMES = [
-    "toc_line_count",
     "toc_line_ratio",
     "digit_density",
     "monotonic_page_numbers",
@@ -138,7 +146,6 @@ def extract_text_features(
         opening_text = " ".join(lines[:5]).lower()
 
         features[page_index] = {
-            "toc_line_count": float(len(matches)),
             "toc_line_ratio": len(matches) / len(candidate_lines) if candidate_lines else 0.0,
             "digit_density": digit_density,
             "monotonic_page_numbers": monotonic,

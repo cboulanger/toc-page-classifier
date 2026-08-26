@@ -84,7 +84,15 @@ def evaluate_leave_one_book_out(table: list[dict], model_name: str) -> dict:
     """Runs LOBO over every book with at least one true TOC page (a book
     with none has nothing to rank a hit against). Returns per-book
     top1/top3 hit flags plus each book's corpus and extraction_type, for
-    breakdown reporting."""
+    breakdown reporting.
+
+    Also returns each book's best_true_page_rank: the 1-indexed rank (by
+    page score, descending) of whichever true TOC page the model scored
+    highest. This is a page-level diagnostic independent of range
+    selection -- it distinguishes "the scorer ranked a true TOC page near
+    the top but select_topk_ranges' contiguous-window logic didn't
+    capture it" (small rank, top1/top3 miss) from "the scorer never gave
+    any true TOC page a competitive score at all" (large rank)."""
     book_keys = sorted({r["book_key"] for r in table})
     per_book = []
     for held_out in book_keys:
@@ -107,12 +115,19 @@ def evaluate_leave_one_book_out(table: list[dict], model_name: str) -> dict:
         ranges = select_topk_ranges(scores, k=_TOP_K)
         top1_hit = bool(ranges) and true_indices <= set(range(ranges[0][0], ranges[0][1] + 1))
         top3_hit = any(true_indices <= set(range(s, e + 1)) for s, e, _ in ranges)
+
+        ranked_page_indices = [
+            i for i, _ in sorted(enumerate(scores), key=lambda pair: pair[1], reverse=True)
+        ]
+        best_true_page_rank = 1 + min(ranked_page_indices.index(i) for i in true_indices)
+
         per_book.append({
             "book_key": held_out,
             "corpus": test_rows[0]["corpus"],
             "extraction_type": test_rows[0]["extraction_type"],
             "top1_hit": top1_hit,
             "top3_hit": top3_hit,
+            "best_true_page_rank": best_true_page_rank,
         })
 
     return {"per_book": per_book}
@@ -138,6 +153,18 @@ def main() -> int:
     print(f"Books evaluated (with >=1 true TOC page): {len(per_book)}")
     print(f"Top-1 hit rate: {_hit_rate(per_book, 'top1_hit'):.1%}")
     print(f"Top-3 hit rate: {_hit_rate(per_book, 'top3_hit'):.1%}")
+    print()
+    ranks = sorted(r["best_true_page_rank"] for r in per_book)
+    n = len(ranks)
+    median_rank = ranks[n // 2] if n % 2 else (ranks[n // 2 - 1] + ranks[n // 2]) / 2
+    print(
+        f"Page-level diagnostic (rank, by score, of the best-scored true TOC "
+        f"page -- independent of range selection):"
+    )
+    print(f"  median best_true_page_rank: {median_rank:.1f}")
+    for cutoff in (1, 3, 10):
+        pct = sum(1 for rank in ranks if rank <= cutoff) / n
+        print(f"  books with best_true_page_rank <= {cutoff}: {pct:.1%}")
     print()
     print("By corpus:")
     for corpus in sorted({r["corpus"] for r in per_book}):

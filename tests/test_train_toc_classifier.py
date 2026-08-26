@@ -89,3 +89,7 @@ def test_evaluate_leave_one_book_out_top1_requires_full_coverage_top3_allows_it(
     result = next(r for r in summary["per_book"] if r["book_key"] == "target")
     assert result["top1_hit"] is False
     assert result["top3_hit"] is True
+    # Page-level diagnostic: true pages are {1, 2}, scored 0.8 each -- tied
+    # for 2nd/3rd highest score behind page 0's 0.95 false-positive peak, so
+    # the best-scored true page ranks 2nd overall.
+    assert result["best_true_page_rank"] == 2
