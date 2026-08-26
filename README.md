@@ -45,10 +45,24 @@ ground truth for a TOC-page classifier.
    `src/toc_page_classifier/locate_toc.py`): score every full-text page
    against the DNB TOC scan's own text via word-token Ochiai overlap, and
    report the highest-scoring contiguous page range as the located TOC.
-5. **Classifier training/evaluation** (`cli/train_toc_classifier.py`,
+5. **Keyword mining** (`cli/mine_toc_keywords.py`, run once/occasionally,
+   not on every commit): empirically scans the merged ground truth for
+   frequent TOC-heading phrases per language, writing candidates to a
+   scratch file for a human review pass before merging into
+   `data/toc_keywords.json`. Already run once against the full merged
+   corpus (2026-08-25): every frequent candidate found was already in the
+   hand-seeded list, and everything else was noise (page numbers, OCR
+   garbage, one unrelated word) -- a real, verified negative result, not
+   a skipped step. `data/toc_keywords.json` itself is unchanged from its
+   original hand-seeded version as a result.
+6. **Classifier training/evaluation** (`cli/train_toc_classifier.py`,
    `src/toc_page_classifier/{layout_features,text_features,ground_truth,range_selection}.py`):
    merges both ground-truth sources, trains a page-level scorer, and
-   reports leave-one-book-out top-1/top-3 range-hit rates.
+   reports leave-one-book-out top-1/top-3 range-hit rates -- a
+   predicted range counts as a "hit" only if it fully contains every true
+   TOC page (over-inclusion is tolerated -- the classifier's job is
+   narrowing the page list for a downstream parser, not exact boundaries
+   -- but missing even one true page is not).
 
 ## Current status (2026-08-25)
 
@@ -138,6 +152,11 @@ this more specific, measured gap.
 - The classifier's text features are effectively blind on native-text
   (non-OCR) PDFs -- see the open-access result above and
   `_TOC_LINE_RE`'s known limitation in `text_features.py`.
+- No page-level precision/recall diagnostic yet, though the design spec
+  calls for one (as a secondary metric to distinguish "wrong boundary"
+  from "completely missed") -- `evaluate_leave_one_book_out` currently
+  only reports the top-1/top-3 hit booleans described above. Would help
+  explain *why* a book's range prediction failed, not just that it did.
 
 ## Development
 
