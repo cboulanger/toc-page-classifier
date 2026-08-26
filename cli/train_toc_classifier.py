@@ -20,9 +20,9 @@ from toc_page_classifier.ground_truth import GroundTruthRow, merge_ground_truth
 from toc_page_classifier.layout_features import (
     FEATURE_NAMES as LAYOUT_FEATURE_NAMES,
     add_book_context_features,
+    extract_gap_aware_page_texts,
     extract_page_features,
 )
-from toc_page_classifier.pdf_text import page_texts
 from toc_page_classifier.range_selection import select_topk_ranges
 from toc_page_classifier.text_features import TEXT_FEATURE_NAMES, extract_text_features
 
@@ -35,11 +35,12 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
     "page_index", "features": {...}, "label": bool, "weight": float}."""
     table = []
     for row in rows:
-        pages = page_texts(row.pdf_path)
-        total_pages = len(pages)
+        gap_aware_texts = extract_gap_aware_page_texts(row.pdf_path)
+        total_pages = len(gap_aware_texts)
         if total_pages == 0:
             continue
         layout = add_book_context_features(extract_page_features(row.pdf_path), total_pages)
+        pages = [gap_aware_texts[i] for i in range(total_pages)]
         text = extract_text_features(pages, language=row.language)
         toc_indices = (
             set(range(row.toc_start_index, row.toc_end_index + 1))
