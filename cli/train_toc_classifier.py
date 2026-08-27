@@ -7,9 +7,15 @@ See docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md.
     uv run python cli/train_toc_classifier.py
     uv run python cli/train_toc_classifier.py --model gradient_boosting
     uv run python cli/train_toc_classifier.py --chapter-segmentation-dir ../chapter-segmentation
+
+The feature table (the pdfplumber pass over every book, ~1 minute/book on
+the full corpus) is cached to data/feature_table_cache.pkl and reused
+across --model choices; pass --rebuild-features after a feature-extraction
+code change.
 """
 
 import argparse
+import pickle
 from pathlib import Path
 
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -20,14 +26,14 @@ from toc_page_classifier.ground_truth import GroundTruthRow, merge_ground_truth
 from toc_page_classifier.layout_features import (
     FEATURE_NAMES as LAYOUT_FEATURE_NAMES,
     add_book_context_features,
-    extract_gap_aware_page_texts,
-    extract_page_features,
+    extract_page_features_and_texts,
 )
 from toc_page_classifier.range_selection import select_topk_ranges
 from toc_page_classifier.text_features import TEXT_FEATURE_NAMES, extract_text_features
 
 ALL_FEATURE_NAMES = LAYOUT_FEATURE_NAMES + TEXT_FEATURE_NAMES
 _TOP_K = 3
+_FEATURE_TABLE_CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "feature_table_cache.pkl"
 
 
 def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
@@ -36,11 +42,11 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
     table = []
     for book_number, row in enumerate(rows, start=1):
         print(f"[build_feature_table {book_number}/{len(rows)}] {row.key}", flush=True)
-        gap_aware_texts = extract_gap_aware_page_texts(row.pdf_path)
+        page_features, gap_aware_texts = extract_page_features_and_texts(row.pdf_path)
         total_pages = len(gap_aware_texts)
         if total_pages == 0:
             continue
-        layout = add_book_context_features(extract_page_features(row.pdf_path), total_pages)
+        layout = add_book_context_features(page_features, total_pages)
         pages = [gap_aware_texts[i] for i in range(total_pages)]
         text = extract_text_features(pages, language=row.language)
         toc_indices = (
@@ -161,15 +167,46 @@ def _hit_rate(per_book: list[dict], field: str, group_by: str | None = None, gro
     return sum(r[field] for r in subset) / len(subset) if subset else 0.0
 
 
+def _load_or_build_feature_table(rows: list[GroundTruthRow], rebuild: bool) -> list[dict]:
+    """Loads the feature table from disk if it was built from the exact
+    same set of book keys as `rows`, since build_feature_table's pdfplumber
+    pass over every book's PDF -- not model fitting -- is the dominant
+    per-run cost (~1 minute/book on the full 184-book corpus, identical
+    regardless of --model), and re-running with a different --model or
+    after a range-selection/model-only code change shouldn't have to pay
+    it again. Pass rebuild=True (--rebuild-features) to force a fresh
+    build, e.g. after a feature-extraction code change."""
+    book_keys = sorted(row.key for row in rows)
+    if not rebuild and _FEATURE_TABLE_CACHE_PATH.exists():
+        with open(_FEATURE_TABLE_CACHE_PATH, "rb") as f:
+            cached_keys, cached_table = pickle.load(f)
+        if cached_keys == book_keys:
+            print(f"Loaded cached feature table ({len(cached_table)} rows) from {_FEATURE_TABLE_CACHE_PATH}")
+            return cached_table
+        print("Ground truth's book keys changed since the cache was built -- rebuilding")
+
+    table = build_feature_table(rows)
+    _FEATURE_TABLE_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(_FEATURE_TABLE_CACHE_PATH, "wb") as f:
+        pickle.dump((book_keys, table), f)
+    return table
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0], formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--chapter-segmentation-dir", type=Path, default=None)
     parser.add_argument("--model", choices=["logistic_regression", "gradient_boosting"], default="logistic_regression")
+    parser.add_argument(
+        "--rebuild-features",
+        action="store_true",
+        help="Force a fresh feature-table build instead of using the cached one on disk "
+        "(needed after a feature-extraction code change; a book-key-set change is detected automatically).",
+    )
     args = parser.parse_args()
 
     rows = merge_ground_truth(args.chapter_segmentation_dir)
     print(f"Merged ground truth: {len(rows)} books")
-    table = build_feature_table(rows)
+    table = _load_or_build_feature_table(rows, rebuild=args.rebuild_features)
 
     summary = evaluate_leave_one_book_out(table, args.model)
     per_book = summary["per_book"]

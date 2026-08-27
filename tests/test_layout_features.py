@@ -32,7 +32,7 @@ def test_group_chars_into_lines_returns_empty_for_no_chars():
 
 
 def test_add_book_context_features_computes_relative_and_edge_features():
-    # Three pages, hand-built (bypassing extract_page_features/pdfplumber):
+    # Three pages, hand-built (bypassing extract_page_features_and_texts/pdfplumber):
     # page 0 is a dense page near the front, page 1 a typical body page,
     # page 2 a typical body page near the back of a 5-page book.
     page_features = {

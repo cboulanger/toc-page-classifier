@@ -89,31 +89,32 @@ def _reconstruct_line_text(line: list[dict]) -> str:
     return "".join(parts)
 
 
-def extract_gap_aware_page_texts(pdf_path: str | Path) -> dict[int, str]:
-    """Per-page text reconstructed from pdfplumber char geometry via
-    _reconstruct_line_text, keyed by 0-based page index. Use this instead
-    of pdf_text.page_texts() (pypdf) as extract_text_features's input --
-    it preserves the wide title/page-number gap in native-PDF TOC lines
-    that pypdf's extraction collapses to a single space."""
-    texts: dict[int, str] = {}
-    with pdfplumber.open(str(pdf_path)) as pdf:
-        for page_index, page in enumerate(pdf.pages):
-            lines = _group_chars_into_lines(page.chars)
-            texts[page_index] = "\n".join(_reconstruct_line_text(line) for line in lines)
-    return texts
+def extract_page_features_and_texts(
+    pdf_path: str | Path,
+) -> tuple[dict[int, dict[str, float]], dict[int, str]]:
+    """One pdfplumber pass producing both this book's per-page layout
+    feature dict (keyed by 0-based page index, matching PAGE_FEATURE_NAMES
+    plus add_book_context_features' underscore-prefixed intermediates) and
+    its gap-aware reconstructed per-page text (via _reconstruct_line_text --
+    use this instead of pdf_text.page_texts() (pypdf) as
+    extract_text_features's input, since it preserves the wide
+    title/page-number gap in native-PDF TOC lines that pypdf's extraction
+    collapses to a single space).
 
-
-def extract_page_features(pdf_path: str | Path) -> dict[int, dict[str, float]]:
-    """Parses a PDF into a per-page feature dict, keyed by 0-based page
-    index. A page with no extractable characters gets an all-zero feature
-    vector plus the underscore-prefixed intermediates
-    add_book_context_features needs."""
+    Merged into one pass (2026-08-27) because pdfplumber's own per-page
+    parsing -- not model fitting -- is the dominant per-book cost (measured
+    at ~1 minute/book on the full 184-book corpus): two separate functions
+    each calling pdfplumber.open() independently was parsing every PDF
+    twice for no reason."""
     features: dict[int, dict[str, float]] = {}
+    texts: dict[int, str] = {}
     with pdfplumber.open(str(pdf_path)) as pdf:
         for page_index, page in enumerate(pdf.pages):
             page_height = page.height
             page_width = page.width
             lines = _group_chars_into_lines(page.chars)
+
+            texts[page_index] = "\n".join(_reconstruct_line_text(line) for line in lines)
 
             if not lines:
                 features[page_index] = {
@@ -142,13 +143,13 @@ def extract_page_features(pdf_path: str | Path) -> dict[int, dict[str, float]]:
                 "_max_font_size": max_size,
                 "_modal_font_size": modal_size,
             }
-    return features
+    return features, texts
 
 
 def add_book_context_features(
     page_features: dict[int, dict[str, float]], total_pages: int
 ) -> dict[int, dict[str, float]]:
-    """Second pass over one book's extract_page_features output: adds
+    """Second pass over one book's extract_page_features_and_texts output: adds
     CONTEXT_FEATURE_NAMES and strips the underscore-prefixed intermediates,
     returning vectors keyed exactly by FEATURE_NAMES.
 
