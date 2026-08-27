@@ -23,6 +23,20 @@ If you add a new script under `cli/`, give it a real `argparse` parser
 scripts originally had none, which meant `--help` silently ran the script
 for real instead of printing usage.
 
+## Keep `README.md`'s "Current status" section current-state-only
+
+`README.md`'s "Current status" section should describe where things
+stand right now -- corpus stats, the latest classifier numbers, the
+current known-gaps list -- not the sequence of experiments that got here.
+When a new result supersedes the numbers already there, replace them in
+place; don't append another "Update (date): ..." paragraph on top of the
+old one. Move the superseded narrative (what was tried, what the root
+cause turned out to be, the before/after numbers) into
+`docs/history/classifier-results.md` instead, as a new dated section.
+Anyone who needs the reasoning behind a since-changed default or metric
+can read the history file; README.md readers just want to know what's
+true today.
+
 ## Never let `cli/match_dnb_oa.py` write to `data/corpus/pilot/manifest.json`
 
 That file is owned by `cli/discover_oa_dnb_candidates.py`. `match_dnb_oa.py`
