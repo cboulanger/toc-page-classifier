@@ -30,4 +30,5 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=8.3.0",
+    "huggingface-hub>=0.28.1",
 ]

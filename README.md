@@ -20,6 +20,19 @@ as package data -- see `cli/train_final_model.py` to retrain it). Pass
 `language="de"` (an ISO language code) if you know the book's language,
 for a small keyword-matching feature; omit it if you don't.
 
+## Demo
+
+A Gradio demo (`space/`) wraps `locate_toc_pages` for upload-a-PDF/try-an-example
+use in a browser -- see `space/README.md`. Run it locally:
+
+```bash
+uv run --with gradio python space/app.py
+```
+
+Deploy (or redeploy) it to a Hugging Face Space with `cli/upload_space.py`
+(see `cli/README.md`). No hosted demo is linked here yet -- this section
+will get that link once one is published.
+
 ## Motivation
 
 The Deutsche Nationalbibliothek's CC0-licensed "Kataloganreicherung" program

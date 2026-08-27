@@ -8,8 +8,10 @@ each script's own `--help` output whenever a script changes -- see
 
 Just want predicted TOC pages for a PDF? You don't need any script on this
 page -- call `toc_page_classifier.predict.locate_toc_pages(pdf_path)`
-directly (see the main `README.md`'s "Usage" section). The one script here
-is for producing/refreshing the model that call loads:
+directly (see the main `README.md`'s "Usage" section), or try the hosted
+Hugging Face Space demo (see `README.md`). The two scripts here are for
+producing/refreshing the model that call loads, and for (re-)deploying
+the demo:
 
 ### `train_final_model.py`
 
@@ -43,6 +45,46 @@ options:
   --model {logistic_regression,gradient_boosting}
   --rebuild-features
   --out OUT
+```
+
+### `upload_space.py`
+
+Packages and uploads the Gradio demo (`space/`) to a Hugging Face Space
+repo. No separate model checkpoint to push first and no GPU hardware to
+request, unlike a fine-tuned-LLM demo -- bundles the whole
+`src/toc_page_classifier/` package into `space/toc_page_classifier/`
+right before uploading (removed again after), so the demo always ships
+whatever this repo's package currently contains. Needs a `.env` file
+with an `HF_TOKEN=` line (not committed to this repo).
+
+```
+usage: upload_space.py [-h] --space-id SPACE_ID --env-file ENV_FILE
+                       [--private | --public]
+
+Packages and uploads the Gradio demo (space/) to a Hugging Face Space
+repo.
+
+Unlike a fine-tuned-LLM demo, this classifier's whole model is a ~370KB
+scikit-learn artifact already committed inside this repo (see
+src/toc_page_classifier/data/model.pkl) -- there's no separate
+HPC-trained checkpoint to push to its own model repo first, and no GPU
+hardware to request; the Space just needs this package installed.
+Bundles the whole src/toc_page_classifier/ package into
+space/toc_page_classifier/ before uploading (removed again afterwards --
+not a separate copy kept in this directory, see space/README.md) so the
+demo always ships whatever this repo's own package currently contains.
+
+Run (needs a .env file with an HF_TOKEN= line, not committed to this repo):
+
+    uv run python cli/upload_space.py --space-id <your-hf-namespace>/toc-page-classifier-demo \
+        --env-file ~/.env
+
+options:
+  -h, --help           show this help message and exit
+  --space-id SPACE_ID  e.g. <your-hf-namespace>/toc-page-classifier-demo
+  --env-file ENV_FILE  .env file with an HF_TOKEN= line
+  --private            default
+  --public
 ```
 
 ## Training/evaluating the classifier
