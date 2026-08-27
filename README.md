@@ -179,6 +179,75 @@ new native-text signal. The design spec's already-listed deferred
 directions (a small LM/VLM finetune, per-`extraction_type` calibration)
 remain candidates too.
 
+**Update (2026-08-27): the actual bottleneck was range selection, not the
+model or features.** Prompted by the still-poor ~10% hit rates above, two
+diagnostics were added to `evaluate_leave_one_book_out`: `best_true_page_rank`
+(the rank, by page score, of the best-scored true TOC page -- independent
+of range selection) and `top1_overlap`/`top3_overlap` (a loose hit
+definition requiring only overlap with the true set, not full coverage).
+These revealed that the page-level scorer was already excellent --
+`best_true_page_rank` <= 1 for ~94-98% of books, and `top1_overlap` at
+94-98% -- while `top1_hit` stayed near 10%. The scorer was finding the
+right pages; `range_selection.select_topk_ranges` was failing to turn that
+into a correct range.
+
+Root cause: candidate windows were ranked by **mean** score. A real
+multi-page TOC's continuation pages (no visible "Contents" heading, so no
+`keyword_hit` signal) reliably score lower than the headed first page, but
+still meaningfully above baseline -- and folding a lower-but-real page
+into a window always pulls its mean down relative to a narrower window
+hugging just the peak. Since the design's hit metric already tolerates
+over-inclusion (a window only needs to *contain* the true page set, not
+match it exactly -- see `evaluate_leave_one_book_out`'s definition above),
+switching the ranking criterion to **sum** removes this bias entirely:
+including a genuinely-elevated continuation page can only raise a
+window's sum, never lower it. `select_topk_ranges`' `max_window` was also
+raised from 4 to 6 (covering 179/181 ground-truth books' TOC spans instead
+of 169/181), though this alone moved the needle only slightly -- the
+sum-vs-mean change was the real fix, confirmed by re-measuring after each
+change in isolation.
+
+A second, unrelated bug was found and fixed along the way:
+`extract_gap_aware_page_texts` and `extract_page_features` each
+independently called `pdfplumber.open()` and re-ran the same per-page
+char-grouping -- every book's PDF was being parsed twice for no reason,
+at a measured cost of ~1 minute/book (the full corpus's feature-table
+build alone was taking 3-4 hours). Merged into one `pdfplumber` pass
+(`extract_page_features_and_texts`), and the built feature table is now
+cached to `data/feature_table_cache.pkl` (keyed by the ground truth's
+book-key set) so re-running with a different `--model`, or after a
+model/range-selection-only code change, skips PDF-parsing entirely.
+
+Fresh full LOBO run after all of the above:
+
+| Model | Top-1 | Top-3 |
+| --- | --- | --- |
+| `logistic_regression` (default) | 85.6% | 96.1% |
+| `gradient_boosting` | 90.1% | 92.3% |
+
+By corpus:
+
+| Corpus | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| copyrighted-scans (n=29) | 89.7% / 100.0% | 93.1% / 96.6% |
+| dnb_located (n=95) | 85.3% / 94.7% | 88.4% / 91.6% |
+| open-access (n=57) | 84.2% / 96.5% | 91.2% / 91.2% |
+
+By extraction_type (chapter_segmentation rows only):
+
+| extraction_type | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| native (n=74) | 83.8% / 97.3% | 91.9% / 93.2% |
+| scan (n=12) | 100.0% / 100.0% | 91.7% / 91.7% |
+
+Both models moved from "barely better than nothing" (5.5-11.6%) to
+solidly production-plausible territory (85.6-96.1%), with the
+open-access/native slice -- the one that was hard-zero just one day
+earlier -- now at 84.2%/96.5% (`logistic_regression`) and 91.2%/91.2%
+(`gradient_boosting`). This is the first LOBO result in this project's
+history that looks like a usable classifier rather than a measurement
+checkpoint.
+
 **Known gaps / not yet done:**
 
 - Discovery only checks ISBNs already known to OAPEN/DOAB; it never
@@ -187,15 +256,13 @@ remain candidates too.
   means. In practice this hasn't been a limiting factor (100/100 found
   entirely via live per-ISBN lookups).
 - No OCR/vision fallback for the 3 `reference_has_no_text` books.
-- `logistic_regression` (the CLI's default model) still doesn't exploit
-  the native-text signal the gap-aware fix now provides -- see the
-  2026-08-26 update above. `gradient_boosting` does, and currently scores
-  higher on every corpus/extraction_type slice measured.
-- No page-level precision/recall diagnostic yet, though the design spec
-  calls for one (as a secondary metric to distinguish "wrong boundary"
-  from "completely missed") -- `evaluate_leave_one_book_out` currently
-  only reports the top-1/top-3 hit booleans described above. Would help
-  explain *why* a book's range prediction failed, not just that it did.
+- None of the 95 `dnb_located` entries have been manually verified beyond
+  a couple of spot-checks (`"verified": false` on every one) -- the LOBO
+  numbers above trust that ground truth as-is.
+- The remaining top1_hit misses (and the top1_hit-vs-top3_hit gap) haven't
+  been individually diagnosed -- `best_true_page_rank` and the overlap
+  metrics narrow down *where* to look (scorer vs. range selection) but no
+  per-book failure analysis has been done yet.
 
 ## Development
 
