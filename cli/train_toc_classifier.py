@@ -47,8 +47,7 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
     table = []
     for book_number, row in enumerate(rows, start=1):
         print(f"[build_feature_table {book_number}/{len(rows)}] {row.key}", flush=True)
-        page_features, gap_aware_texts = extract_page_features_and_texts(row.pdf_path)
-        total_pages = len(gap_aware_texts)
+        page_features, gap_aware_texts, total_pages = extract_page_features_and_texts(row.pdf_path)
         if total_pages == 0:
             continue
         layout = add_book_context_features(page_features, total_pages)

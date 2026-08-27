@@ -20,6 +20,12 @@ as package data -- see `cli/train_final_model.py` to retrain it). Pass
 `language="de"` (an ISO language code) if you know the book's language,
 for a small keyword-matching feature; omit it if you don't.
 
+By default only the first 30 and last 20 pages are actually parsed
+(`head_pages=30, tail_pages=20`) -- a real TOC is essentially never buried
+in a long book's interior, and that interior is what makes a long PDF slow
+to process (each page needs a full layout pass). Pass `head_pages=None,
+tail_pages=None` to scan every page instead, or your own page counts.
+
 ## Demo
 
 Try it hosted: [cmboulanger/toc-page-classifier-demo](https://huggingface.co/spaces/cmboulanger/toc-page-classifier-demo)

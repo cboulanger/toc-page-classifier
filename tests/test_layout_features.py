@@ -3,6 +3,7 @@ from toc_page_classifier.layout_features import (
     _group_chars_into_lines,
     _reconstruct_line_text,
     add_book_context_features,
+    extract_page_features_and_texts,
 )
 
 
@@ -100,6 +101,82 @@ def test_reconstruct_line_text_inserts_double_space_for_wide_toc_gap():
     # page number, with no literal dot-leader characters in between.
     line = _chars(("Foreword", 0.0, 40.0, 10.0), ("7", 75.0, 81.0, 10.0))
     assert _reconstruct_line_text(line) == "Foreword  7"
+
+
+class _FakePage:
+    """Stands in for a pdfplumber Page -- `chars` is a property so tests
+    can tell whether a given page's (expensive, real-pdfminer-triggering)
+    content was ever touched."""
+
+    def __init__(self):
+        self.height = 100.0
+        self.width = 100.0
+        self.chars_accessed = False
+
+    @property
+    def chars(self):
+        self.chars_accessed = True
+        return []
+
+
+class _FakePDF:
+    def __init__(self, pages):
+        self.pages = pages
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+def test_extract_page_features_and_texts_scans_only_head_and_tail_pages(monkeypatch):
+    from toc_page_classifier import layout_features
+
+    pages = [_FakePage() for _ in range(10)]
+    monkeypatch.setattr(layout_features.pdfplumber, "open", lambda path: _FakePDF(pages))
+
+    features, texts, total_pages = extract_page_features_and_texts(
+        "irrelevant.pdf", head_pages=2, tail_pages=2
+    )
+
+    assert total_pages == 10
+    assert set(features.keys()) == {0, 1, 8, 9}
+    assert set(texts.keys()) == {0, 1, 8, 9}
+    # The interior pages must never have had their chars parsed -- that
+    # per-page pdfminer layout pass is exactly the cost being skipped.
+    for index in [2, 3, 4, 5, 6, 7]:
+        assert pages[index].chars_accessed is False
+    for index in [0, 1, 8, 9]:
+        assert pages[index].chars_accessed is True
+
+
+def test_extract_page_features_and_texts_scans_every_page_when_head_and_tail_cover_book(monkeypatch):
+    from toc_page_classifier import layout_features
+
+    pages = [_FakePage() for _ in range(4)]
+    monkeypatch.setattr(layout_features.pdfplumber, "open", lambda path: _FakePDF(pages))
+
+    features, _texts, total_pages = extract_page_features_and_texts(
+        "irrelevant.pdf", head_pages=3, tail_pages=3
+    )
+
+    assert total_pages == 4
+    assert set(features.keys()) == {0, 1, 2, 3}
+    assert all(page.chars_accessed for page in pages)
+
+
+def test_extract_page_features_and_texts_scans_every_page_by_default(monkeypatch):
+    from toc_page_classifier import layout_features
+
+    pages = [_FakePage() for _ in range(5)]
+    monkeypatch.setattr(layout_features.pdfplumber, "open", lambda path: _FakePDF(pages))
+
+    features, _texts, total_pages = extract_page_features_and_texts("irrelevant.pdf")
+
+    assert total_pages == 5
+    assert set(features.keys()) == {0, 1, 2, 3, 4}
+    assert all(page.chars_accessed for page in pages)
 
 
 def test_reconstruct_line_text_output_matches_toc_line_regex():

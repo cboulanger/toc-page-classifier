@@ -91,25 +91,47 @@ def _reconstruct_line_text(line: list[dict]) -> str:
 
 def extract_page_features_and_texts(
     pdf_path: str | Path,
-) -> tuple[dict[int, dict[str, float]], dict[int, str]]:
+    head_pages: int | None = None,
+    tail_pages: int | None = None,
+) -> tuple[dict[int, dict[str, float]], dict[int, str], int]:
     """One pdfplumber pass producing both this book's per-page layout
     feature dict (keyed by 0-based page index, matching PAGE_FEATURE_NAMES
-    plus add_book_context_features' underscore-prefixed intermediates) and
+    plus add_book_context_features' underscore-prefixed intermediates),
     its gap-aware reconstructed per-page text (via _reconstruct_line_text --
     use this instead of pdf_text.page_texts() (pypdf) as
     extract_text_features's input, since it preserves the wide
     title/page-number gap in native-PDF TOC lines that pypdf's extraction
-    collapses to a single space).
+    collapses to a single space), and the book's total page count.
 
     Merged into one pass (2026-08-27) because pdfplumber's own per-page
     parsing -- not model fitting -- is the dominant per-book cost (measured
     at ~1 minute/book on the full 184-book corpus): two separate functions
     each calling pdfplumber.open() independently was parsing every PDF
-    twice for no reason."""
-    features: dict[int, dict[str, float]] = {}
-    texts: dict[int, str] = {}
+    twice for no reason.
+
+    By default (head_pages and tail_pages both None) every page is parsed --
+    training/evaluation needs honest features for every page, since the
+    true TOC location isn't known in advance. Pass head_pages/tail_pages to
+    parse only the first head_pages and/or last tail_pages pages instead --
+    a real TOC is essentially never buried deep in a long book's interior,
+    and that interior is exactly what makes a long book slow to parse (each
+    page requires a full pdfminer layout pass). If the two windows overlap
+    or together cover the whole book, every page is parsed anyway rather
+    than skipping the (nonexistent) gap between them. The returned dicts
+    only have entries for the pages actually parsed."""
     with pdfplumber.open(str(pdf_path)) as pdf:
+        total_pages = len(pdf.pages)
+        wanted_pages: set[int] | None = None
+        if head_pages is not None or tail_pages is not None:
+            head = range(min(head_pages or 0, total_pages))
+            tail = range(max(total_pages - (tail_pages or 0), 0), total_pages)
+            wanted_pages = set(head) | set(tail)
+
+        features: dict[int, dict[str, float]] = {}
+        texts: dict[int, str] = {}
         for page_index, page in enumerate(pdf.pages):
+            if wanted_pages is not None and page_index not in wanted_pages:
+                continue
             page_height = page.height
             page_width = page.width
             lines = _group_chars_into_lines(page.chars)
@@ -143,7 +165,7 @@ def extract_page_features_and_texts(
                 "_max_font_size": max_size,
                 "_modal_font_size": modal_size,
             }
-    return features, texts
+    return features, texts, total_pages
 
 
 def add_book_context_features(
