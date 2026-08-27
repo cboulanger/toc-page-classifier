@@ -22,14 +22,18 @@ _MAX_PREVIEW_PAGES = 6
 # project's own ground-truth corpus (data/corpus/pilot/manifest.json) --
 # these were part of the data the shipped model was trained on, so treat
 # them as a quick illustration of the tool, not a held-out accuracy test;
-# upload your own PDF for that.
+# upload your own PDF for that. OAPEN's bitstream URLs have no filename
+# or extension (they all end in plain "/retrieve"), so each entry also
+# carries the book's own title -- from the same manifest -- as its
+# example_labels caption; without one, Gradio falls back to showing the
+# meaningless literal "retrieve" for every example.
 _EXAMPLES = [
-    ["https://library.oapen.org/rest/bitstreams/fb942a48-c1a1-4ba9-b859-0e2a1aecdfad/retrieve"],  # en: Covid-19 in Asia
-    ["https://library.oapen.org/rest/bitstreams/5e7031bd-743f-4474-99fb-5f729792b7a6/retrieve"],  # de: Wider die Verunsicherung
-    ["https://library.oapen.org/rest/bitstreams/a8ca8e7c-855b-4708-90f2-13892191075f/retrieve"],  # es: Resignificar la vida
-    ["https://library.oapen.org/rest/bitstreams/5b3bcd76-0b00-49d4-906a-a137b614c602/retrieve"],  # fr: Discours sur l'éducation au XVIIIe siècle
-    ["https://library.oapen.org/rest/bitstreams/563219e8-1d1b-4b22-954e-66947fe1727a/retrieve"],  # it: Le lingue della Chiesa
-    ["https://library.oapen.org/rest/bitstreams/baade1b2-4ab3-4401-a62b-a7447dfa5dd4/retrieve"],  # nl: Over de grens
+    ("https://library.oapen.org/rest/bitstreams/fb942a48-c1a1-4ba9-b859-0e2a1aecdfad/retrieve", "EN — Covid-19 in Asia"),
+    ("https://library.oapen.org/rest/bitstreams/5e7031bd-743f-4474-99fb-5f729792b7a6/retrieve", "DE — Wider die Verunsicherung"),
+    ("https://library.oapen.org/rest/bitstreams/a8ca8e7c-855b-4708-90f2-13892191075f/retrieve", "ES — Resignificar la vida"),
+    ("https://library.oapen.org/rest/bitstreams/5b3bcd76-0b00-49d4-906a-a137b614c602/retrieve", "FR — Discours sur l'éducation au XVIIIe siècle"),
+    ("https://library.oapen.org/rest/bitstreams/563219e8-1d1b-4b22-954e-66947fe1727a/retrieve", "IT — Le lingue della Chiesa"),
+    ("https://library.oapen.org/rest/bitstreams/baade1b2-4ab3-4401-a62b-a7447dfa5dd4/retrieve", "NL — Over de grens"),
 ]
 
 
@@ -71,9 +75,17 @@ with gr.Blocks(title="TOC Page Classifier") as demo:
         "See [toc-page-classifier](https://github.com/cboulanger/toc-page-classifier) "
         "for training/evaluation details and the library API."
     )
-    pdf_input = gr.File(label="Book PDF", file_types=[".pdf"], type="filepath")
+    # No file_types restriction: OAPEN's example URLs resolve to real PDFs
+    # but have no ".pdf" (or any) extension, which would otherwise fail
+    # Gradio's client-side extension check before predict() ever runs --
+    # actual content validation happens inside predict() via pdfplumber.
+    pdf_input = gr.File(label="Book PDF", type="filepath")
     run_btn = gr.Button("Locate TOC", variant="primary")
-    gr.Examples(examples=_EXAMPLES, inputs=pdf_input)
+    gr.Examples(
+        examples=[[url] for url, _label in _EXAMPLES],
+        example_labels=[label for _url, label in _EXAMPLES],
+        inputs=pdf_input,
+    )
     summary_output = gr.Textbox(label="Result")
     gallery_output = gr.Gallery(label="Predicted pages", columns=3)
     run_btn.click(predict, inputs=pdf_input, outputs=[summary_output, gallery_output])
