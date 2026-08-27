@@ -15,9 +15,8 @@ table of contents. See that repo's README.md for training/evaluation
 details (leave-one-book-out hit rates, corpus composition) and its
 "Usage" section for calling the same function directly in your own code.
 
-Unlike a fine-tuned-LLM demo, there is no separate model checkpoint to
-push here: the classifier is a small (~370KB) scikit-learn model
-committed directly inside the `toc_page_classifier` package
+The classifier is a small (~370KB) scikit-learn model committed directly
+inside the `toc_page_classifier` package
 (`src/toc_page_classifier/data/model.pkl`). This Space runs entirely on
 the free CPU tier -- no GPU, no runtime model download.
 

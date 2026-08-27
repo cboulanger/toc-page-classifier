@@ -50,8 +50,8 @@ options:
 ### `upload_space.py`
 
 Packages and uploads the Gradio demo (`space/`) to a Hugging Face Space
-repo. No separate model checkpoint to push first and no GPU hardware to
-request, unlike a fine-tuned-LLM demo -- bundles the whole
+repo. Fetches `space/examples/*.pdf` (the demo's example books,
+gitignored) if not already present, then bundles the whole
 `src/toc_page_classifier/` package into `space/toc_page_classifier/`
 right before uploading (removed again after), so the demo always ships
 whatever this repo's package currently contains. Needs a `.env` file
@@ -64,15 +64,25 @@ usage: upload_space.py [-h] --space-id SPACE_ID --env-file ENV_FILE
 Packages and uploads the Gradio demo (space/) to a Hugging Face Space
 repo.
 
-Unlike a fine-tuned-LLM demo, this classifier's whole model is a ~370KB
-scikit-learn artifact already committed inside this repo (see
-src/toc_page_classifier/data/model.pkl) -- there's no separate
-HPC-trained checkpoint to push to its own model repo first, and no GPU
-hardware to request; the Space just needs this package installed.
+This classifier's whole model is a ~370KB scikit-learn artifact already
+committed inside this repo (see src/toc_page_classifier/data/model.pkl),
+so there's no separate checkpoint to push anywhere first, and no GPU
+hardware to request -- the Space just needs this package installed.
 Bundles the whole src/toc_page_classifier/ package into
 space/toc_page_classifier/ before uploading (removed again afterwards --
 not a separate copy kept in this directory, see space/README.md) so the
 demo always ships whatever this repo's own package currently contains.
+
+Also fetches space/examples/*.pdf (the demo's example books) if not
+already present on disk -- these are gitignored, not committed to this
+repo (they're real full-text books, several MB each), so a fresh
+checkout needs this step before its first deploy. Downloaded once, real
+static files from then on: app.py's examples no longer depend on OAPEN's
+server being reachable (or a bitstream not 500'ing) at demo request time,
+and each file's own name -- not just its Gradio example-button label --
+is the book's real title, since Gradio derives a File component's
+displayed/downloaded name from the example value's own path, not from
+example_labels (which only labels the button).
 
 Run (needs a .env file with an HF_TOKEN= line, not committed to this repo):
 
