@@ -53,18 +53,23 @@ def test_evaluate_leave_one_book_out_top1_requires_full_coverage_top3_allows_it(
     selected window to fully CONTAIN the true TOC page set (a subset check,
     not mere overlap). Stubs the model's predict_proba with fixed,
     hand-picked scores (via monkeypatching _make_model) so this test
-    exercises select_topk_ranges' real greedy/overlap logic deterministically,
-    independent of any actual classifier's behavior."""
-    # True TOC is pages {1, 2}. Fixed page scores: page 0 has the single
-    # highest score of all (a false-positive elsewhere), pages 1 and 2 are
-    # tied just below it, page 3 is low. Worked through select_topk_ranges'
-    # greedy overlap logic by hand: rank-1 window is the lone page-0 peak
-    # (misses the true set entirely), but the 2-page window covering {1, 2}
-    # (tied score, wins the width tie-break over the two solo sub-windows)
-    # is still available and lands at rank 2 -- inside the top-3.
-    fixed_scores = [0.95, 0.8, 0.8, 0.1]
+    exercises select_topk_ranges' real greedy/sum-ranked/overlap logic
+    deterministically, independent of any actual classifier's behavior."""
+    # True TOC is pages {6, 7, 8} (a headed page at 6 plus two lower-scoring
+    # continuation pages, matching the real shape a multi-page TOC's
+    # keyword-hit-only-on-the-first-page takes). A false-positive region at
+    # pages 0-1 scores even higher. Worked through select_topk_ranges' real
+    # sum-ranked greedy/overlap logic by hand (max_window defaults to 6):
+    # every window spanning some prefix of {0, 1} sums to 1.98 (0.99+0.99,
+    # padding with zeros doesn't change the sum) and the widest of those
+    # ties, (0, 5), wins the width tie-break -- so rank 1 is a 6-page
+    # window that never touches the true set at all. Once (0, 5) is
+    # removed, the best remaining window is (6, 9) at sum 1.4 (again a
+    # zero-padding tie against the tighter (6, 8), won by width) -- this
+    # is rank 2, and it fully contains {6, 7, 8}.
+    fixed_scores = [0.99, 0.99, 0.0, 0.0, 0.0, 0.0, 0.9, 0.3, 0.2, 0.0]
     filler_rows = [_row("filler", i, label=False) for i in range(4)]
-    target_rows = [_row("target", i, label=(i in (1, 2))) for i in range(4)]
+    target_rows = [_row("target", i, label=(i in (6, 7, 8))) for i in range(10)]
     table = filler_rows + target_rows
 
     class _FixedScoreModel:
@@ -89,13 +94,11 @@ def test_evaluate_leave_one_book_out_top1_requires_full_coverage_top3_allows_it(
     result = next(r for r in summary["per_book"] if r["book_key"] == "target")
     assert result["top1_hit"] is False
     assert result["top3_hit"] is True
-    # Page-level diagnostic: true pages are {1, 2}, scored 0.8 each -- tied
-    # for 2nd/3rd highest score behind page 0's 0.95 false-positive peak, so
-    # the best-scored true page ranks 2nd overall.
-    assert result["best_true_page_rank"] == 2
-    # The rank-1 window is the lone page-0 peak, which doesn't intersect the
-    # true set {1, 2} at all -- a full miss even under the loose overlap
-    # definition. But rank 2 is the {1, 2} window itself, so top3_overlap
-    # (which checks all k windows) is True, same as top3_hit here.
+    # Page-level diagnostic: individual page scores rank 0 and 1 (0.99 each)
+    # above page 6 (0.9), so the best-scored true page ranks 3rd overall.
+    assert result["best_true_page_rank"] == 3
+    # The rank-1 window (0, 5) doesn't intersect the true set {6, 7, 8} at
+    # all -- a full miss even under the loose overlap definition. But rank
+    # 2, (6, 9), does, so top3_overlap is True, same as top3_hit here.
     assert result["top1_overlap"] is False
     assert result["top3_overlap"] is True
