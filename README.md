@@ -63,7 +63,7 @@ ground truth for a TOC-page classifier.
 5. **Keyword mining** (`cli/mine_toc_keywords.py`, run once/occasionally,
    not on every commit): empirically scans the merged ground truth for
    frequent TOC-heading phrases per language, writing candidates to `data/toc_keywords.candidates.json` for a human review pass before merging into
-   `data/toc_keywords.json`. Already run once against the full merged
+   `src/toc_page_classifier/data/toc_keywords.json`. Already run once against the full merged
    corpus (2026-08-25): every frequent candidate found was already in the
    hand-seeded list, and everything else was noise (page numbers, OCR
    garbage, one unrelated word).

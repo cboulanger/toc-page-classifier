@@ -258,10 +258,10 @@ options:
 Empirically mines candidate multilingual TOC-heading keywords (e.g. "contents",
 "inhaltsverzeichnis") from the merged ground truth corpus, grouped by each
 book's declared language, and writes `data/toc_keywords.candidates.json` for a
-human review pass -- never writes to the committed `data/toc_keywords.json`
-directly. Run once/occasionally, not part of the per-book pipeline above; safe
-to re-run whenever the ground truth corpus grows to pick up new languages or
-phrasings.
+human review pass -- never writes to the committed
+`src/toc_page_classifier/data/toc_keywords.json` directly. Run once/occasionally,
+not part of the per-book pipeline above; safe to re-run whenever the ground
+truth corpus grows to pick up new languages or phrasings.
 
 ```
 usage: mine_toc_keywords.py [-h] [--min-count MIN_COUNT]
@@ -269,9 +269,9 @@ usage: mine_toc_keywords.py [-h] [--min-count MIN_COUNT]
 Empirically mines candidate TOC-heading keywords from the merged ground truth
 corpus, grouped by each book's declared language -- writes
 data/toc_keywords.candidates.json for a HUMAN REVIEW PASS. Never writes to
-data/toc_keywords.json directly: a frequent short phrase found here still
-needs a human judgment call on whether it's really a TOC-heading phrase (not,
-e.g., a frequent but unrelated short word). See
+src/toc_page_classifier/data/toc_keywords.json directly: a frequent short
+phrase found here still needs a human judgment call on whether it's really a
+TOC-heading phrase (not, e.g., a frequent but unrelated short word). See
 docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's "Text /
 structural" section.
 

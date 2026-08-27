@@ -2,7 +2,7 @@
 reimplementation of chapter_segmentation's TOC-line structural pattern
 (src/chapter_segmentation/segmentation.py's _TOC_LINE_RE and friends -- not
 imported, to keep this repo self-contained) plus multilingual keyword
-matching against data/toc_keywords.json. See
+matching against this package's own bundled data/toc_keywords.json. See
 docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's "Text /
 structural" section."""
 
@@ -12,9 +12,12 @@ from functools import lru_cache
 from itertools import pairwise
 from pathlib import Path
 
-DEFAULT_KEYWORDS_PATH = str(
-    Path(__file__).resolve().parent.parent.parent / "data" / "toc_keywords.json"
-)
+# Resolved relative to this module's own location, not the repo root --
+# this file must resolve correctly for an installed copy of this package
+# (e.g. a pip/git install with no repo checkout alongside it), not just
+# when run from a dev checkout. See src/toc_page_classifier/data/ and
+# pyproject.toml's wheel `artifacts` entry, which ships it.
+DEFAULT_KEYWORDS_PATH = str(Path(__file__).resolve().parent / "data" / "toc_keywords.json")
 
 # Matches "<title> <dots-or-spaces> <page number>". Requires at least 2
 # separator characters so ordinary prose sentences ending in a number don't

@@ -2,11 +2,11 @@
 """Empirically mines candidate TOC-heading keywords from the merged ground
 truth corpus, grouped by each book's declared language -- writes
 data/toc_keywords.candidates.json for a HUMAN REVIEW PASS. Never writes to
-data/toc_keywords.json directly: a frequent short phrase found here still
-needs a human judgment call on whether it's really a TOC-heading phrase
-(not, e.g., a frequent but unrelated short word). See
-docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's "Text /
-structural" section.
+src/toc_page_classifier/data/toc_keywords.json directly: a frequent short
+phrase found here still needs a human judgment call on whether it's
+really a TOC-heading phrase (not, e.g., a frequent but unrelated short
+word). See docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md's
+"Text / structural" section.
 
     uv run python cli/mine_toc_keywords.py
     uv run python cli/mine_toc_keywords.py --min-count 2
@@ -73,7 +73,7 @@ def main() -> int:
     _CANDIDATES_PATH.write_text(json.dumps(filtered, indent=2, ensure_ascii=False, sort_keys=True))
     total = sum(len(phrases) for phrases in filtered.values())
     print(f"Wrote {total} candidate phrase(s) across {len(filtered)} language(s) to {_CANDIDATES_PATH}")
-    print("Review by hand before merging any of these into data/toc_keywords.json.")
+    print("Review by hand before merging any of these into src/toc_page_classifier/data/toc_keywords.json.")
     return 0
 
 
