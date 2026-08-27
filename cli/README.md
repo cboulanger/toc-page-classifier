@@ -11,34 +11,7 @@ page -- call `toc_page_classifier.predict.locate_toc_pages(pdf_path)`
 directly (see the main `README.md`'s "Usage" section). The one script here
 is for producing/refreshing the model that call loads:
 
-1. `train_final_model.py` -- fits the deployable model on the full merged
-   ground truth and serializes it to `src/toc_page_classifier/data/model.pkl`,
-   the package data `locate_toc_pages` loads. Already committed and
-   working; re-run this only after a feature/ground-truth change you want
-   the shipped model to pick up.
-
-## Training/evaluating the classifier
-
-The rest of this page is the pipeline that produces and evaluates the
-classifier's training data, run in this order:
-
-1. `harvest_oapen.py`, `harvest_doab.py` -- build the OA ISBN pool.
-2. `discover_oa_dnb_candidates.py` -- find DNB TOC-scan matches within that
-   pool, diversity-capped (the actual discovery path; writes
-   `data/corpus/pilot/manifest.json`).
-3. `match_dnb_oa.py` -- optional, narrower offline cross-check against a
-   local DNB manifest (does not touch `manifest.json`).
-4. `fetch_pairs.py` -- download both PDFs per matched pair.
-5. `locate_toc.py` -- locate the TOC page range in each full text, writing
-   `data/corpus/pilot/ground-truth/`.
-6. `mine_toc_keywords.py` -- mine `data/toc_keywords.json` candidate
-   TOC-heading keywords from the merged ground truth corpus. Done
-   once/occasionally as the ground truth grows, not per-book.
-7. `train_toc_classifier.py` -- leave-one-book-out evaluate the TOC-page
-   classifier over the merged ground truth (a measurement tool -- it does
-   not produce the deployable model; that's `train_final_model.py` above).
-
-## `train_final_model.py`
+### `train_final_model.py`
 
 Fits the deployable model on the FULL merged ground truth (no held-out
 book, unlike `train_toc_classifier.py`'s LOBO evaluation below) and
@@ -72,7 +45,12 @@ options:
   --out OUT
 ```
 
-## `harvest_oapen.py`
+## Training/evaluating the classifier
+
+The pipeline that produces and evaluates the classifier's training data,
+run in the order below.
+
+### `harvest_oapen.py`
 
 Harvests OAPEN's public OAI-PMH "Books" set (~49.8k records) into a local
 `isbn -> handle` cache. Takes several minutes; not run on every commit, only
@@ -95,7 +73,7 @@ options:
   --out OUT
 ```
 
-## `harvest_doab.py`
+### `harvest_doab.py`
 
 Same mechanism as `harvest_oapen.py`, against DOAB's "Books" set (~72.5k
 records). DOAB partially overlaps OAPEN and often has no directly
@@ -121,7 +99,7 @@ options:
   --out OUT
 ```
 
-## `discover_oa_dnb_candidates.py`
+### `discover_oa_dnb_candidates.py`
 
 The actual discovery path: for every OA ISBN from the two harvest caches,
 checks live against lobid.org for a matching DNB TOC scan, applies
@@ -180,7 +158,7 @@ options:
   --volume-type-cap-fraction VOLUME_TYPE_CAP_FRACTION
 ```
 
-## `match_dnb_oa.py`
+### `match_dnb_oa.py`
 
 An older, narrower alternative: an offline-only intersection against
 whatever local DNB manifest `DNB_TOC_CORPUS_DIR` points at, with no live
@@ -218,7 +196,7 @@ options:
   --out OUT
 ```
 
-## `fetch_pairs.py`
+### `fetch_pairs.py`
 
 Downloads both PDFs (DNB TOC scan + OA full text) for every matched pair in
 `manifest.json`. Idempotent -- skips a pair whose files already exist, and
@@ -242,7 +220,7 @@ options:
   -h, --help  show this help message and exit
 ```
 
-## `locate_toc.py`
+### `locate_toc.py`
 
 Runs the text-overlap locator against every downloaded pair, writing one
 ground-truth JSON per book. Never aborts the whole batch on a single bad
@@ -275,7 +253,7 @@ options:
   -h, --help  show this help message and exit
 ```
 
-## `mine_toc_keywords.py`
+### `mine_toc_keywords.py`
 
 Empirically mines candidate multilingual TOC-heading keywords (e.g. "contents",
 "inhaltsverzeichnis") from the merged ground truth corpus, grouped by each
@@ -304,7 +282,7 @@ options:
                         2).
 ```
 
-## `train_toc_classifier.py`
+### `train_toc_classifier.py`
 
 Leave-one-book-out (LOBO) training/evaluation of the TOC-page classifier
 itself: merges both ground-truth sources
