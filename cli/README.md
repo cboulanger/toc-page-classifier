@@ -266,8 +266,7 @@ broken down by corpus and `extraction_type`. See `README.md`'s "Current
 status" section for the first measured result.
 
 ```
-usage: train_toc_classifier.py [-h]
-                               [--chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR]
+usage: train_toc_classifier.py [-h] [--corpus-dir CORPUS_DIR]
                                [--model {logistic_regression,gradient_boosting}]
                                [--rebuild-features]
 
@@ -278,7 +277,12 @@ See docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md.
 
 options:
   -h, --help            show this help message and exit
-  --chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR
+  --corpus-dir CORPUS_DIR
+                        Additional expected-json evaluation corpus
+                        (repeatable) -- a single corpus directory, or a root
+                        containing several named ones. Corpora under this
+                        repo's own data/corpus/ are auto-discovered and don't
+                        need this flag.
   --model {logistic_regression,gradient_boosting}
   --rebuild-features    Force a fresh feature-table build instead of using the
                         cached one on disk (needed after a feature-extraction
@@ -298,8 +302,7 @@ top-1 hit rate, per `README.md`'s current-status table). Must be run as
 directly -- see the script's own docstring for why.
 
 ```
-usage: python3 -m cli.train_final_model [-h]
-                                        [--chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR]
+usage: python3 -m cli.train_final_model [-h] [--corpus-dir CORPUS_DIR]
                                         [--model {logistic_regression,gradient_boosting}]
                                         [--rebuild-features] [--out OUT]
 
@@ -310,7 +313,12 @@ where toc_page_classifier.predict.locate_toc_pages loads it from.
 
 options:
   -h, --help            show this help message and exit
-  --chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR
+  --corpus-dir CORPUS_DIR
+                        Additional expected-json evaluation corpus
+                        (repeatable) -- a single corpus directory, or a root
+                        containing several named ones. Corpora under this
+                        repo's own data/corpus/ are auto-discovered and don't
+                        need this flag.
   --model {logistic_regression,gradient_boosting}
   --rebuild-features
   --out OUT

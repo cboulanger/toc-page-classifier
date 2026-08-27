@@ -6,7 +6,7 @@ where toc_page_classifier.predict.locate_toc_pages loads it from.
 
     uv run python -m cli.train_final_model
     uv run python -m cli.train_final_model --model logistic_regression
-    uv run python -m cli.train_final_model --chapter-segmentation-dir ../chapter-segmentation
+    uv run python -m cli.train_final_model --corpus-dir ../chapter-segmentation/evaluation/corpus
 
 Run as `-m cli.train_final_model`, not `python cli/train_final_model.py`
 directly -- unlike this repo's other cli/ scripts, this one imports from
@@ -36,13 +36,21 @@ _DEFAULT_MODEL_PATH = (
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0], formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--chapter-segmentation-dir", type=Path, default=None)
+    parser.add_argument(
+        "--corpus-dir",
+        type=Path,
+        action="append",
+        default=None,
+        help="Additional expected-json evaluation corpus (repeatable) -- a single corpus "
+        "directory, or a root containing several named ones. Corpora under this repo's "
+        "own data/corpus/ are auto-discovered and don't need this flag.",
+    )
     parser.add_argument("--model", choices=["logistic_regression", "gradient_boosting"], default="gradient_boosting")
     parser.add_argument("--rebuild-features", action="store_true")
     parser.add_argument("--out", type=Path, default=_DEFAULT_MODEL_PATH)
     args = parser.parse_args()
 
-    rows = merge_ground_truth(args.chapter_segmentation_dir)
+    rows = merge_ground_truth(args.corpus_dir)
     print(f"Merged ground truth: {len(rows)} books")
     table = _load_or_build_feature_table(rows, rebuild=args.rebuild_features)
 

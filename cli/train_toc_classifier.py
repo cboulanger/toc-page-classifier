@@ -6,7 +6,12 @@ See docs/superpowers/specs/2026-08-25-toc-page-classifier-design.md.
 
     uv run python cli/train_toc_classifier.py
     uv run python cli/train_toc_classifier.py --model gradient_boosting
-    uv run python cli/train_toc_classifier.py --chapter-segmentation-dir ../chapter-segmentation
+    uv run python cli/train_toc_classifier.py --corpus-dir ../chapter-segmentation/evaluation/corpus
+
+Corpora under this repo's own data/corpus/ are auto-discovered; --corpus-dir
+(repeatable) adds any other expected-json evaluation corpus -- either a
+single corpus directory, or a root containing several named ones (see
+toc_page_classifier.ground_truth.discover_corpus_dirs).
 
 The feature table (the pdfplumber pass over every book, ~1 minute/book on
 the full corpus) is cached to data/feature_table_cache.pkl and reused
@@ -194,7 +199,15 @@ def _load_or_build_feature_table(rows: list[GroundTruthRow], rebuild: bool) -> l
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0], formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--chapter-segmentation-dir", type=Path, default=None)
+    parser.add_argument(
+        "--corpus-dir",
+        type=Path,
+        action="append",
+        default=None,
+        help="Additional expected-json evaluation corpus (repeatable) -- a single corpus "
+        "directory, or a root containing several named ones. Corpora under this repo's "
+        "own data/corpus/ are auto-discovered and don't need this flag.",
+    )
     parser.add_argument("--model", choices=["logistic_regression", "gradient_boosting"], default="logistic_regression")
     parser.add_argument(
         "--rebuild-features",
@@ -204,7 +217,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    rows = merge_ground_truth(args.chapter_segmentation_dir)
+    rows = merge_ground_truth(args.corpus_dir)
     print(f"Merged ground truth: {len(rows)} books")
     table = _load_or_build_feature_table(rows, rebuild=args.rebuild_features)
 

@@ -5,8 +5,9 @@ import pytest
 
 from toc_page_classifier.ground_truth import (
     _margin_to_weight,
-    load_chapter_segmentation_rows,
+    discover_corpus_dirs,
     load_dnb_located_rows,
+    load_expected_json_corpus,
     merge_ground_truth,
 )
 
@@ -17,9 +18,11 @@ def _write_json(path: Path, data: dict) -> None:
 
 
 @pytest.fixture
-def chapter_segmentation_dir(tmp_path):
-    root = tmp_path / "chapter-segmentation"
-    corpus = root / "evaluation" / "corpus" / "open-access"
+def expected_json_corpus_dir(tmp_path):
+    """A single expected-json corpus directory (files directly inside,
+    no nesting) -- e.g. what a caller would pass via --corpus-dir when
+    pointing at one specific corpus."""
+    corpus = tmp_path / "open-access"
     _write_json(corpus / "manifest.json", {"books": [
         {"filename": "1111111111.pdf", "language": "en", "extraction_type": "native"},
         {"filename": "2222222222.pdf", "language": "de", "extraction_type": "scan"},
@@ -31,6 +34,22 @@ def chapter_segmentation_dir(tmp_path):
     # no "toc" key at all -- must be excluded
     _write_json(corpus / "3333333333.expected.json", {})
     (corpus / "3333333333.pdf").write_bytes(b"%PDF-1.4 fake")
+    return corpus
+
+
+@pytest.fixture
+def multi_corpus_root(tmp_path):
+    """A root containing two separately-named corpus subdirectories --
+    e.g. chapter-segmentation's own evaluation/corpus/ layout, or any
+    other project's equivalent."""
+    root = tmp_path / "corpus-root"
+    for name, key in [("open-access", "5555555555"), ("copyrighted-scans", "6666666666")]:
+        corpus = root / name
+        _write_json(corpus / f"{key}.expected.json", {"toc": {"toc_start_index": 1, "toc_end_index": 1}})
+        (corpus / f"{key}.pdf").write_bytes(b"%PDF-1.4 fake")
+    # a subdirectory with no *.expected.json files -- not a corpus, must be skipped
+    (root / "not-a-corpus").mkdir()
+    (root / "not-a-corpus" / "notes.txt").write_text("irrelevant")
     return root
 
 
@@ -61,6 +80,15 @@ def dnb_dirs(tmp_path, monkeypatch):
     return gt_dir, pdf_dir
 
 
+@pytest.fixture
+def no_auto_discovered_corpora(tmp_path, monkeypatch):
+    """Points _CORPUS_ROOT at an empty directory so merge_ground_truth's
+    auto-discovery of this repo's own data/corpus/ doesn't pull in the
+    real corpus while a test is only exercising extra_corpus_dirs."""
+    import toc_page_classifier.ground_truth as gt_module
+    monkeypatch.setattr(gt_module, "_CORPUS_ROOT", tmp_path / "empty-corpus-root")
+
+
 def test_margin_to_weight_clips_into_expected_range():
     assert _margin_to_weight(0.0) == pytest.approx(0.3)
     assert _margin_to_weight(0.5) == pytest.approx(1.0)
@@ -68,8 +96,21 @@ def test_margin_to_weight_clips_into_expected_range():
     assert _margin_to_weight(-1.0) == pytest.approx(0.3)  # clipped, never < 0.3
 
 
-def test_load_chapter_segmentation_rows_includes_null_toc_and_excludes_missing_key(chapter_segmentation_dir):
-    rows = load_chapter_segmentation_rows(chapter_segmentation_dir)
+def test_discover_corpus_dirs_returns_root_itself_when_it_is_one_corpus(expected_json_corpus_dir):
+    assert discover_corpus_dirs(expected_json_corpus_dir) == [expected_json_corpus_dir]
+
+
+def test_discover_corpus_dirs_returns_named_subdirs_skipping_non_corpus_ones(multi_corpus_root):
+    found = discover_corpus_dirs(multi_corpus_root)
+    assert found == [multi_corpus_root / "copyrighted-scans", multi_corpus_root / "open-access"]
+
+
+def test_discover_corpus_dirs_returns_empty_for_missing_root(tmp_path):
+    assert discover_corpus_dirs(tmp_path / "nonexistent") == []
+
+
+def test_load_expected_json_corpus_includes_null_toc_and_excludes_missing_key(expected_json_corpus_dir):
+    rows = load_expected_json_corpus(expected_json_corpus_dir)
     keys = {r.key for r in rows}
     assert keys == {"1111111111", "2222222222"}  # "3333333333" has no "toc" key
     by_key = {r.key: r for r in rows}
@@ -77,13 +118,9 @@ def test_load_chapter_segmentation_rows_includes_null_toc_and_excludes_missing_k
     assert by_key["1111111111"].weight == 1.0
     assert by_key["1111111111"].language == "en"
     assert by_key["1111111111"].extraction_type == "native"
+    assert by_key["1111111111"].corpus == expected_json_corpus_dir.name
     assert by_key["2222222222"].toc_start_index is None  # confirmed no TOC
     assert by_key["2222222222"].extraction_type == "scan"
-
-
-def test_load_chapter_segmentation_rows_raises_when_corpus_dir_missing():
-    with pytest.raises(FileNotFoundError):
-        load_chapter_segmentation_rows(Path("/some/nonexistent/path"))
 
 
 def test_load_dnb_located_rows_excludes_non_located_and_maps_margin_to_weight(dnb_dirs):
@@ -96,12 +133,34 @@ def test_load_dnb_located_rows_excludes_non_located_and_maps_margin_to_weight(dn
     assert by_key["4444444444"].language == "fr"
 
 
-def test_merge_ground_truth_prefers_chapter_segmentation_on_isbn_collision(chapter_segmentation_dir, dnb_dirs):
-    rows = merge_ground_truth(chapter_segmentation_dir)
+def test_merge_ground_truth_prefers_expected_json_on_key_collision(
+    expected_json_corpus_dir, dnb_dirs, no_auto_discovered_corpora
+):
+    rows = merge_ground_truth([expected_json_corpus_dir])
     by_key = {r.key: r for r in rows}
-    # "1111111111" exists in both sources -- chapter_segmentation's row wins
-    assert by_key["1111111111"].source == "chapter_segmentation"
+    # "1111111111" exists in both sources -- the expected-json row wins
+    assert by_key["1111111111"].source == "expected_json"
     assert by_key["1111111111"].toc_start_index == 3
     # "4444444444" only exists in the DNB source
     assert by_key["4444444444"].source == "dnb_located"
     assert {r.key for r in rows} == {"1111111111", "2222222222", "4444444444"}
+
+
+def test_merge_ground_truth_accepts_a_multi_corpus_root(multi_corpus_root, dnb_dirs, no_auto_discovered_corpora):
+    rows = merge_ground_truth([multi_corpus_root])
+    keys = {r.key for r in rows}
+    assert {"5555555555", "6666666666"} <= keys
+
+
+def test_merge_ground_truth_auto_discovers_data_corpus(tmp_path, dnb_dirs, monkeypatch):
+    import toc_page_classifier.ground_truth as gt_module
+
+    auto_root = tmp_path / "data-corpus"
+    corpus = auto_root / "auto-discovered"
+    _write_json(corpus / "7777777777.expected.json", {"toc": {"toc_start_index": 2, "toc_end_index": 2}})
+    (corpus / "7777777777.pdf").write_bytes(b"%PDF-1.4 fake")
+    monkeypatch.setattr(gt_module, "_CORPUS_ROOT", auto_root)
+
+    rows = merge_ground_truth()
+    by_key = {r.key: r for r in rows}
+    assert by_key["7777777777"].corpus == "auto-discovered"
