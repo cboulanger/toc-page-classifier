@@ -1,6 +1,26 @@
 # CLI scripts
 
-One script per pipeline stage, run in this order:
+Every script accepts `-h`/`--help`. **This file must be kept in sync with
+each script's own `--help` output whenever a script changes -- see
+`AGENTS.md`.**
+
+## Using the classifier
+
+Just want predicted TOC pages for a PDF? You don't need any script on this
+page -- call `toc_page_classifier.predict.locate_toc_pages(pdf_path)`
+directly (see the main `README.md`'s "Usage" section). The one script here
+is for producing/refreshing the model that call loads:
+
+1. `train_final_model.py` -- fits the deployable model on the full merged
+   ground truth and serializes it to `src/toc_page_classifier/data/model.pkl`,
+   the package data `locate_toc_pages` loads. Already committed and
+   working; re-run this only after a feature/ground-truth change you want
+   the shipped model to pick up.
+
+## Training/evaluating the classifier
+
+The rest of this page is the pipeline that produces and evaluates the
+classifier's training data, run in this order:
 
 1. `harvest_oapen.py`, `harvest_doab.py` -- build the OA ISBN pool.
 2. `discover_oa_dnb_candidates.py` -- find DNB TOC-scan matches within that
@@ -14,12 +34,43 @@ One script per pipeline stage, run in this order:
 6. `mine_toc_keywords.py` -- mine `data/toc_keywords.json` candidate
    TOC-heading keywords from the merged ground truth corpus. Done
    once/occasionally as the ground truth grows, not per-book.
-7. `train_toc_classifier.py` -- train and leave-one-book-out evaluate the
-   TOC-page classifier over the merged ground truth.
+7. `train_toc_classifier.py` -- leave-one-book-out evaluate the TOC-page
+   classifier over the merged ground truth (a measurement tool -- it does
+   not produce the deployable model; that's `train_final_model.py` above).
 
-Every script accepts `-h`/`--help`. **This file must be kept in sync with
-each script's own `--help` output whenever a script changes -- see
-`AGENTS.md`.**
+## `train_final_model.py`
+
+Fits the deployable model on the FULL merged ground truth (no held-out
+book, unlike `train_toc_classifier.py`'s LOBO evaluation below) and
+serializes it to `src/toc_page_classifier/data/model.pkl`, the bundled
+package data `toc_page_classifier.predict.locate_toc_pages` loads at
+import time. Defaults to `gradient_boosting` (the stronger model on
+top-1 hit rate, per `README.md`'s current-status table). Must be run as
+`python -m cli.train_final_model`, not `python cli/train_final_model.py`
+directly -- see the script's own docstring for why.
+
+```
+usage: python3 -m cli.train_final_model [-h] [--corpus-dir CORPUS_DIR]
+                                        [--model {logistic_regression,gradient_boosting}]
+                                        [--rebuild-features] [--out OUT]
+
+Fits the deployable TOC-page model on the FULL merged ground truth (no
+held-out book, unlike train_toc_classifier.py's leave-one-book-out
+evaluation) and serializes it to src/toc_page_classifier/data/model.pkl,
+where toc_page_classifier.predict.locate_toc_pages loads it from.
+
+options:
+  -h, --help            show this help message and exit
+  --corpus-dir CORPUS_DIR
+                        Additional expected-json evaluation corpus
+                        (repeatable) -- a single corpus directory, or a root
+                        containing several named ones. Corpora under this
+                        repo's own data/corpus/ are auto-discovered and don't
+                        need this flag.
+  --model {logistic_regression,gradient_boosting}
+  --rebuild-features
+  --out OUT
+```
 
 ## `harvest_oapen.py`
 
@@ -288,38 +339,4 @@ options:
                         cached one on disk (needed after a feature-extraction
                         code change; a book-key-set change is detected
                         automatically).
-```
-
-## `train_final_model.py`
-
-Fits the deployable model on the FULL merged ground truth (no held-out
-book, unlike `train_toc_classifier.py`'s LOBO evaluation above) and
-serializes it to `src/toc_page_classifier/data/model.pkl`, the bundled
-package data `toc_page_classifier.predict.locate_toc_pages` loads at
-import time. Defaults to `gradient_boosting` (the stronger model on
-top-1 hit rate, per `README.md`'s current-status table). Must be run as
-`python -m cli.train_final_model`, not `python cli/train_final_model.py`
-directly -- see the script's own docstring for why.
-
-```
-usage: python3 -m cli.train_final_model [-h] [--corpus-dir CORPUS_DIR]
-                                        [--model {logistic_regression,gradient_boosting}]
-                                        [--rebuild-features] [--out OUT]
-
-Fits the deployable TOC-page model on the FULL merged ground truth (no
-held-out book, unlike train_toc_classifier.py's leave-one-book-out
-evaluation) and serializes it to src/toc_page_classifier/data/model.pkl,
-where toc_page_classifier.predict.locate_toc_pages loads it from.
-
-options:
-  -h, --help            show this help message and exit
-  --corpus-dir CORPUS_DIR
-                        Additional expected-json evaluation corpus
-                        (repeatable) -- a single corpus directory, or a root
-                        containing several named ones. Corpora under this
-                        repo's own data/corpus/ are auto-discovered and don't
-                        need this flag.
-  --model {logistic_regression,gradient_boosting}
-  --rebuild-features
-  --out OUT
 ```
