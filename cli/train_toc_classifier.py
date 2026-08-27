@@ -34,7 +34,8 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
     """One row per page: {"book_key", "corpus", "extraction_type",
     "page_index", "features": {...}, "label": bool, "weight": float}."""
     table = []
-    for row in rows:
+    for book_number, row in enumerate(rows, start=1):
+        print(f"[build_feature_table {book_number}/{len(rows)}] {row.key}", flush=True)
         gap_aware_texts = extract_gap_aware_page_texts(row.pdf_path)
         total_pages = len(gap_aware_texts)
         if total_pages == 0:
@@ -102,11 +103,22 @@ def evaluate_leave_one_book_out(table: list[dict], model_name: str) -> dict:
     entirely"."""
     book_keys = sorted({r["book_key"] for r in table})
     per_book = []
-    for held_out in book_keys:
+    for fold_number, held_out in enumerate(book_keys, start=1):
         test_rows = [r for r in table if r["book_key"] == held_out]
         true_indices = {i for i, r in enumerate(test_rows) if r["label"]}
         if not true_indices:
+            print(
+                f"[evaluate_leave_one_book_out {fold_number}/{len(book_keys)}] "
+                f"{held_out}: skipped, no true TOC page",
+                flush=True,
+            )
             continue
+        print(
+            f"[evaluate_leave_one_book_out {fold_number}/{len(book_keys)}] "
+            f"{held_out}: fitting on {len(table) - len(test_rows)} rows, "
+            f"testing on {len(test_rows)}",
+            flush=True,
+        )
 
         train_rows = [r for r in table if r["book_key"] != held_out]
         X_train = [[r["features"][name] for name in ALL_FEATURE_NAMES] for r in train_rows]
