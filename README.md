@@ -22,16 +22,18 @@ for a small keyword-matching feature; omit it if you don't.
 
 ## Demo
 
-A Gradio demo (`space/`) wraps `locate_toc_pages` for upload-a-PDF/try-an-example
-use in a browser -- see `space/README.md`. Run it locally:
+Try it hosted: [cmboulanger/toc-page-classifier-demo](https://huggingface.co/spaces/cmboulanger/toc-page-classifier-demo)
+-- upload a full book PDF, or try one of the example open-access books
+(one per language).
+
+The demo (`space/`) is a thin Gradio wrapper around `locate_toc_pages` --
+see `space/README.md`. Run it locally:
 
 ```bash
 uv run --with gradio python space/app.py
 ```
 
-Deploy (or redeploy) it to a Hugging Face Space with `cli/upload_space.py`
-(see `cli/README.md`). No hosted demo is linked here yet -- this section
-will get that link once one is published.
+Deploy (or redeploy) it with `cli/upload_space.py` (see `cli/README.md`).
 
 ## Motivation
 
