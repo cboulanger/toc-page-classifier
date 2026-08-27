@@ -21,6 +21,7 @@ python_functions = "test_*"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/toc_page_classifier"]
+artifacts = ["src/toc_page_classifier/data/*.pkl"]
 
 [build-system]
 requires = ["hatchling"]

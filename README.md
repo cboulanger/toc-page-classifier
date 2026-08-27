@@ -5,6 +5,21 @@ book PDF, plus the ground-truth generation pipeline it's trained on. Both
 live in this one repo: the discovery/matching/localization pipeline below
 exists specifically to feed this classifier's training data.
 
+## Usage
+
+```python
+from toc_page_classifier.predict import locate_toc_pages
+
+page_indices = locate_toc_pages("path/to/book.pdf")  # e.g. [6, 7, 8]
+```
+
+`locate_toc_pages` returns the predicted 0-based TOC page indices (an
+empty list if the PDF has no extractable pages), using the model bundle
+committed at `src/toc_page_classifier/data/model.pkl` (~370 KB, shipped
+as package data -- see `cli/train_final_model.py` to retrain it). Pass
+`language="de"` (an ISO language code) if you know the book's language,
+for a small keyword-matching feature; omit it if you don't.
+
 ## Motivation
 
 The Deutsche Nationalbibliothek's CC0-licensed "Kataloganreicherung" program

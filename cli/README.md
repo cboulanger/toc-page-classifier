@@ -269,6 +269,7 @@ status" section for the first measured result.
 usage: train_toc_classifier.py [-h]
                                [--chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR]
                                [--model {logistic_regression,gradient_boosting}]
+                               [--rebuild-features]
 
 Leave-one-book-out evaluation of the TOC-page classifier: per-page
 layout + text features, a page-level scorer (LogisticRegression or
@@ -279,4 +280,38 @@ options:
   -h, --help            show this help message and exit
   --chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR
   --model {logistic_regression,gradient_boosting}
+  --rebuild-features    Force a fresh feature-table build instead of using the
+                        cached one on disk (needed after a feature-extraction
+                        code change; a book-key-set change is detected
+                        automatically).
+```
+
+## `train_final_model.py`
+
+Fits the deployable model on the FULL merged ground truth (no held-out
+book, unlike `train_toc_classifier.py`'s LOBO evaluation above) and
+serializes it to `src/toc_page_classifier/data/model.pkl`, the bundled
+package data `toc_page_classifier.predict.locate_toc_pages` loads at
+import time. Defaults to `gradient_boosting` (the stronger model on
+top-1 hit rate, per `README.md`'s current-status table). Must be run as
+`python -m cli.train_final_model`, not `python cli/train_final_model.py`
+directly -- see the script's own docstring for why.
+
+```
+usage: python3 -m cli.train_final_model [-h]
+                                        [--chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR]
+                                        [--model {logistic_regression,gradient_boosting}]
+                                        [--rebuild-features] [--out OUT]
+
+Fits the deployable TOC-page model on the FULL merged ground truth (no
+held-out book, unlike train_toc_classifier.py's leave-one-book-out
+evaluation) and serializes it to src/toc_page_classifier/data/model.pkl,
+where toc_page_classifier.predict.locate_toc_pages loads it from.
+
+options:
+  -h, --help            show this help message and exit
+  --chapter-segmentation-dir CHAPTER_SEGMENTATION_DIR
+  --model {logistic_regression,gradient_boosting}
+  --rebuild-features
+  --out OUT
 ```
