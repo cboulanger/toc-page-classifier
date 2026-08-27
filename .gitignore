@@ -12,3 +12,4 @@ data/corpus/pilot/match_dnb_oa_check.json
 data/toc_keywords.candidates.json
 data/feature_table_cache.pkl
 space/toc_page_classifier/
+.*
