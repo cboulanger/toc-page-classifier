@@ -6,17 +6,21 @@ as package data, shipped alongside this module)."""
 import pickle
 from pathlib import Path
 
-from .layout_features import add_book_context_features, extract_page_features_and_texts
+from .layout_features import (
+    add_book_context_features,
+    extract_page_features_and_texts,
+    split_into_runs,
+)
 from .range_selection import select_topk_ranges
 from .text_features import extract_text_features
 
 DEFAULT_MODEL_PATH = Path(__file__).resolve().parent / "data" / "model.pkl"
 
 # A real TOC is essentially never buried in a long book's interior, so
-# locate_toc_pages only parses the first _DEFAULT_HEAD_PAGES and last
-# _DEFAULT_TAIL_PAGES pages by default -- skipping the interior is what
-# actually speeds up a long book, since each page needs a full pdfminer
-# layout pass (see extract_page_features_and_texts).
+# locate_toc_pages only converts the first _DEFAULT_HEAD_PAGES and last
+# _DEFAULT_TAIL_PAGES pages by default -- skipping the interior keeps both
+# pdfalto's work and the ALTO document read back from it proportional to
+# the pages that can matter (see extract_page_features_and_texts).
 _DEFAULT_HEAD_PAGES = 30
 _DEFAULT_TAIL_PAGES = 20
 
@@ -27,28 +31,13 @@ def _score_pages(
     page_indices: list[int] | None = None,
 ) -> list[float]:
     """Pure scoring step -- split out from locate_toc_pages so it's
-    testable without a real PDF/pdfplumber. `features_per_page` must have
+    testable without a real PDF/pdfalto. `features_per_page` must have
     every name in bundle["feature_names"] for each index in `page_indices`
     (every page 0..n-1 if not given)."""
     feature_names = bundle["feature_names"]
     indices = page_indices if page_indices is not None else range(len(features_per_page))
     X = [[features_per_page[i][name] for name in feature_names] for i in indices]
     return [p[1] for p in bundle["model"].predict_proba(bundle["scaler"].transform(X))]
-
-
-def _split_into_runs(page_indices: list[int]) -> list[list[int]]:
-    """Splits an ascending list of page indices into maximal runs of
-    consecutive integers. A head+tail scan skips the pages in between,
-    so its scanned pages form two runs, not one -- select_topk_ranges
-    assumes its input is one contiguous stretch of pages, and must not be
-    asked to treat the last head page and first tail page as adjacent."""
-    runs: list[list[int]] = []
-    for index in page_indices:
-        if runs and index == runs[-1][-1] + 1:
-            runs[-1].append(index)
-        else:
-            runs.append([index])
-    return runs
 
 
 def locate_toc_pages(
@@ -67,7 +56,7 @@ def locate_toc_pages(
     match -- pass None if unknown.
 
     Only the first `head_pages` and last `tail_pages` pages are actually
-    parsed (pass None/None to scan every page instead) -- see
+    converted (pass None/None to scan every page instead) -- see
     extract_page_features_and_texts for why this is where a long book's
     processing time goes, and why skipping its interior is safe."""
     with open(model_path, "rb") as f:
@@ -88,7 +77,7 @@ def locate_toc_pages(
     }
 
     candidates: list[tuple[int, int, float]] = []
-    for run in _split_into_runs(scanned_pages):
+    for run in split_into_runs(scanned_pages):
         scores = _score_pages(features_per_page, bundle, page_indices=run)
         for start, end, score in select_topk_ranges(scores, k=top_k):
             candidates.append((run[start], run[end], score))

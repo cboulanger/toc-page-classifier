@@ -158,6 +158,15 @@ that was the actual turning point.
 
 **Known gaps / not yet done:**
 
+- The bundled `src/toc_page_classifier/data/model.pkl` -- and the LOBO
+  numbers above -- were fitted on features extracted by `pdfplumber`,
+  which `layout_features.py` replaced with `pdfalto` on 2026-09-04. The
+  feature *names* are unchanged, but their values shift (ALTO word boxes
+  and its own line segmentation, against pdfplumber's raw per-char
+  geometry), so the shipped model is being fed slightly
+  out-of-distribution inputs until it is refitted. Re-run
+  `cli/fetch_pairs.py`, then `cli/train_toc_classifier.py
+  --rebuild-features` and `cli/train_final_model.py`, to close this.
 - Discovery only checks ISBNs already known to OAPEN/DOAB; it never
   streams the full lobid-resources dump, so it can't find DNB TOC scans
   for OA books lobid doesn't already know the ISBN link for by other

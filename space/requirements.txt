@@ -1,3 +1,9 @@
 gradio>=4.0
-pdfplumber>=0.11.0
+# No PyPI release carries pdfalto's Python bindings yet
+# (kermitt2/pdfalto#255) -- swap this for a plain `pdfalto>=0.6.2` once
+# it is published, so the Space installs the prebuilt wheel instead of
+# running pdfalto's CMake build on every rebuild.
+pdfalto @ git+https://github.com/kermitt2/pdfalto.git@feature/python-bindings
+pypdf>=5.1.0
+pypdfium2>=4.30.0
 scikit-learn>=1.5.0

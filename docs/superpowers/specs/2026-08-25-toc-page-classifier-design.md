@@ -132,9 +132,12 @@ geometry-only pilot's excluded-text-content constraint.
 
 ### Geometry (new to this repo)
 
-Extracted via `pdfplumber` (pure Python, no external binary -- unlike the
-old pilot's `pdfalto` dependency, which needs a separately built sibling
-checkout). A lighter re-derivation of the old pilot's proven feature set,
+Extracted via `pdfalto`, the same ALTO XML converter the old pilot used --
+no longer a separately built sibling checkout, but a pip dependency whose
+wheels bundle the compiled binary. (Written against `pdfplumber` first, to
+avoid that build step entirely; swapped back on 2026-09-04, once the
+bindings existed, for a ~6x faster extraction and explicit line/word
+boxes.) A lighter re-derivation of the old pilot's proven feature set,
 keeping what's TOC-relevant and dropping what was chapter-opening-specific:
 
 - Font-size contrast: page's max line font size vs. its own modal
@@ -244,7 +247,7 @@ vs. copyrighted-scans, and native vs. scanned `extraction_type`.
 
 New modules under `src/toc_page_classifier/`:
 
-- `layout_features.py` -- `pdfplumber`-based per-page geometry extraction.
+- `layout_features.py` -- `pdfalto`-based per-page geometry extraction.
 - `text_features.py` -- structural pattern matching + keyword matching
   (reads `data/toc_keywords.json`).
 - `ground_truth.py` -- merges the two label sources into one weighted

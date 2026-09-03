@@ -19,6 +19,7 @@ import gradio as gr
 from toc_page_classifier.predict import locate_toc_pages
 
 _MAX_PREVIEW_PAGES = 6
+_PREVIEW_DPI = 120
 
 # Real open-access OAPEN books, one per language, drawn from this
 # project's own ground-truth corpus (data/corpus/pilot/manifest.json) --
@@ -57,12 +58,19 @@ def predict(pdf_path: str):
 
     previews = []
     try:
-        import pdfplumber
+        import pypdfium2
 
-        with pdfplumber.open(pdf_path) as pdf:
+        # Rendered here rather than by whatever the classifier itself parses
+        # the PDF with: pdfalto is a text/layout extractor and produces no
+        # page images at all. pypdfium2 is the renderer pdfplumber's own
+        # to_image() delegated to before this Space stopped depending on it.
+        pdf = pypdfium2.PdfDocument(pdf_path)
+        try:
             for page_index in page_indices[:_MAX_PREVIEW_PAGES]:
-                image = pdf.pages[page_index].to_image(resolution=120).original
+                image = pdf[page_index].render(scale=_PREVIEW_DPI / 72).to_pil()
                 previews.append((image, f"page {page_index}"))
+        finally:
+            pdf.close()
     except Exception:
         pass  # the preview is a bonus -- the page-index summary above is the real answer
 
