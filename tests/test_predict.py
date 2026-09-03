@@ -1,4 +1,4 @@
-from toc_page_classifier.predict import _score_pages, _split_into_runs, locate_toc_pages
+from toc_page_classifier.predict import _score_pages, locate_toc_pages
 
 
 class _FixedScoreModel:
@@ -45,14 +45,6 @@ def test_score_pages_orders_features_by_bundle_feature_names():
     }
     scores = _score_pages(features_per_page, bundle)
     assert scores == [0.1, 0.9]
-
-
-def test_split_into_runs_groups_consecutive_indices():
-    assert _split_into_runs([0, 1, 2, 8, 9, 15]) == [[0, 1, 2], [8, 9], [15]]
-
-
-def test_split_into_runs_handles_empty_input():
-    assert _split_into_runs([]) == []
 
 
 def test_locate_toc_pages_returns_empty_list_for_pdf_with_no_pages(tmp_path, monkeypatch):

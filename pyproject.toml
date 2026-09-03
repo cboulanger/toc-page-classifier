@@ -8,8 +8,8 @@ dependencies = [
     "pypdf>=5.1.0",
     "httpx>=0.27.0",
     "cryptography>=50.0.0",
-    "pdfplumber>=0.11.0",
     "scikit-learn>=1.5.0",
+    "pdfalto",
 ]
 
 [tool.pytest.ini_options]
@@ -22,6 +22,14 @@ python_functions = "test_*"
 [tool.hatch.build.targets.wheel]
 packages = ["src/toc_page_classifier"]
 artifacts = ["src/toc_page_classifier/data/*"]
+
+# pdfalto's Python bindings (which is what makes it a pip dependency rather
+# than a separately built binary on PATH) are not on PyPI yet -- they live in
+# kermitt2/pdfalto#255. Drop this section once they are released; the
+# published wheels bundle the compiled binary, so installing from PyPI will
+# not need the CMake build this git source runs.
+[tool.uv.sources]
+pdfalto = { git = "https://github.com/kermitt2/pdfalto.git", rev = "feature/python-bindings" }
 
 [build-system]
 requires = ["hatchling"]

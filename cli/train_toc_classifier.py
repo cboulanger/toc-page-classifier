@@ -13,10 +13,9 @@ Corpora under this repo's own data/corpus/ are auto-discovered; --corpus-dir
 single corpus directory, or a root containing several named ones (see
 toc_page_classifier.ground_truth.discover_corpus_dirs).
 
-The feature table (the pdfplumber pass over every book, ~1 minute/book on
-the full corpus) is cached to data/feature_table_cache.pkl and reused
-across --model choices; pass --rebuild-features after a feature-extraction
-code change.
+The feature table (the pdfalto pass over every book) is cached to
+data/feature_table_cache.pkl and reused across --model choices; pass
+--rebuild-features after a feature-extraction code change.
 """
 
 import argparse
@@ -62,7 +61,7 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
         for page_index in range(total_pages):
             if page_index not in layout:
                 dropped_pages.append(page_index)
-                continue  # pdfplumber found no page geometry (should not normally happen)
+                continue  # no page geometry at all (should not normally happen)
             features = {**layout[page_index], **text[page_index]}
             table.append({
                 "book_key": row.key,
@@ -75,9 +74,9 @@ def build_feature_table(rows: list[GroundTruthRow]) -> list[dict]:
             })
         if dropped_pages:
             print(
-                f"WARNING: {row.key}: pdfplumber found no page geometry for "
+                f"WARNING: {row.key}: no page geometry for "
                 f"{len(dropped_pages)}/{total_pages} page(s) {dropped_pages} -- "
-                f"dropped from the feature table (pypdf and pdfplumber disagreed "
+                f"dropped from the feature table (pypdf and pdfalto disagreed "
                 f"on page count/content, or the page has no extractable geometry)."
             )
     return table
@@ -173,12 +172,11 @@ def _hit_rate(per_book: list[dict], field: str, group_by: str | None = None, gro
 
 def _load_or_build_feature_table(rows: list[GroundTruthRow], rebuild: bool) -> list[dict]:
     """Loads the feature table from disk if it was built from the exact
-    same set of book keys as `rows`, since build_feature_table's pdfplumber
+    same set of book keys as `rows`, since build_feature_table's pdfalto
     pass over every book's PDF -- not model fitting -- is the dominant
-    per-run cost (~1 minute/book on the full 184-book corpus, identical
-    regardless of --model), and re-running with a different --model or
-    after a range-selection/model-only code change shouldn't have to pay
-    it again. Pass rebuild=True (--rebuild-features) to force a fresh
+    per-run cost (identical regardless of --model), and re-running with a
+    different --model or after a range-selection/model-only code change
+    shouldn't have to pay it again. Pass rebuild=True (--rebuild-features) to force a fresh
     build, e.g. after a feature-extraction code change."""
     book_keys = sorted(row.key for row in rows)
     if not rebuild and _FEATURE_TABLE_CACHE_PATH.exists():
