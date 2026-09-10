@@ -129,44 +129,40 @@ couple of spot-checks -- `"verified": false` on every one.
 **Classifier performance** (`cli/train_toc_classifier.py`, full LOBO over
 the merged ground truth -- 89 `chapter_segmentation` books + 95
 `dnb_located` pairs; 181 of them have at least one true TOC page and were
-scored):
+scored; layout features extracted by `pdfalto`):
 
 | Model | Top-1 | Top-3 |
 | --- | --- | --- |
-| `logistic_regression` (default) | 85.6% | 96.1% |
-| `gradient_boosting` | 90.1% | 92.3% |
+| `logistic_regression` (default) | 86.2% | 95.6% |
+| `gradient_boosting` | 90.6% | 94.5% |
 
 By corpus:
 
 | Corpus | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
 | --- | --- | --- |
-| copyrighted-scans (n=29) | 89.7% / 100.0% | 93.1% / 96.6% |
-| dnb_located (n=95) | 85.3% / 94.7% | 88.4% / 91.6% |
-| open-access (n=57) | 84.2% / 96.5% | 91.2% / 91.2% |
+| copyrighted-scans (n=29) | 89.7% / 100.0% | 96.6% / 100.0% |
+| dnb_located (n=95) | 86.3% / 93.7% | 86.3% / 92.6% |
+| open-access (n=57) | 84.2% / 96.5% | 94.7% / 94.7% |
 
 By extraction_type (chapter_segmentation rows only):
 
 | extraction_type | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
 | --- | --- | --- |
-| native (n=74) | 83.8% / 97.3% | 91.9% / 93.2% |
-| scan (n=12) | 100.0% / 100.0% | 91.7% / 91.7% |
+| native (n=74) | 85.1% / 97.3% | 94.6% / 95.9% |
+| scan (n=12) | 91.7% / 100.0% | 100.0% / 100.0% |
+
+The bundled `src/toc_page_classifier/data/model.pkl` is a
+`gradient_boosting` model fitted (via `cli/train_final_model.py`) on the
+full merged ground truth with these same `pdfalto` features.
 
 See `docs/history/classifier-results.md` for how this was reached --
 the 2026-08-25 baseline (single digits, one root cause), the
-2026-08-26 gap-aware-text fix, and the 2026-08-27 range-selection fix
-that was the actual turning point.
+2026-08-26 gap-aware-text fix, the 2026-08-27 range-selection fix
+that was the actual turning point, and the 2026-09-10 switch from
+`pdfplumber` to `pdfalto` for layout-feature extraction.
 
 **Known gaps / not yet done:**
 
-- The bundled `src/toc_page_classifier/data/model.pkl` -- and the LOBO
-  numbers above -- were fitted on features extracted by `pdfplumber`,
-  which `layout_features.py` replaced with `pdfalto` on 2026-09-04. The
-  feature *names* are unchanged, but their values shift (ALTO word boxes
-  and its own line segmentation, against pdfplumber's raw per-char
-  geometry), so the shipped model is being fed slightly
-  out-of-distribution inputs until it is refitted. Re-run
-  `cli/fetch_pairs.py`, then `cli/train_toc_classifier.py
-  --rebuild-features` and `cli/train_final_model.py`, to close this.
 - Discovery only checks ISBNs already known to OAPEN/DOAB; it never
   streams the full lobid-resources dump, so it can't find DNB TOC scans
   for OA books lobid doesn't already know the ISBN link for by other

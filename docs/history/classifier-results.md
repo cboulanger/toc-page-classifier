@@ -152,3 +152,63 @@ earlier -- now at 84.2%/96.5% (`logistic_regression`) and 91.2%/91.2%
 (`gradient_boosting`). This was the first LOBO result in this project's
 history that looked like a usable classifier rather than a measurement
 checkpoint.
+
+## 2026-09-10: layout geometry switched from `pdfplumber` to `pdfalto`, re-measured and re-fitted
+
+`layout_features.py` was rewritten to derive its per-page geometry from
+`pdfalto` (GROBID's PDF-to-ALTO-XML front end) instead of `pdfplumber`
+(PR #1). One PDF-to-ALTO subprocess call per book replaces `pdfminer`'s
+per-page layout pass: extracting every page of a 488-page OAPEN book went
+from 59.6s to 9.3s, and the 50-page head+tail scan `predict.py` does by
+default from 4.7s to 1.0s. ALTO also hands back explicit `<TextLine>`
+elements and per-word `<String>` boxes against a document-level font
+table, where `pdfplumber` only exposed raw per-char geometry this module
+had to cluster into lines itself. The feature *names* are unchanged; their
+values shift (ALTO word boxes and ALTO's own line segmentation vs.
+`pdfplumber`'s per-char clustering), so both the LOBO evaluation and the
+shipped `model.pkl` had to be re-run against freshly extracted features.
+
+`pdfalto`'s Python bindings were installed from a git source
+(`kermitt2/pdfalto@feature/python-bindings`) at first, since no PyPI
+release carried them; that was swapped for the published wheel
+(`pdfalto>=0.6.3`) on the same day. The git build shipped `pdfalto`
+binary 0.6.2 and the wheel ships 0.6.3; the two produce byte-identical
+layout features (spot-checked over 1014 pages across a native OA book, a
+scan, and a DNB TOC scan), so the PyPI switch needed no re-measurement of
+its own.
+
+Full feature-table rebuild (`cli/train_toc_classifier.py
+--rebuild-features`) over all 184 books, then both models re-evaluated
+(LOBO) and `model.pkl` re-fitted (`cli/train_final_model.py`, still
+`gradient_boosting` on the full merged ground truth). No book produced a
+"no page geometry" warning this time -- `pdfplumber` had occasionally
+dropped pages where `pypdf` and it disagreed on page content.
+
+LOBO results, `pdfplumber` (2026-08-27, above) -> `pdfalto` (this run):
+
+| Model | Top-1 | Top-3 |
+| --- | --- | --- |
+| `logistic_regression` (default) | 85.6% -> 86.2% | 96.1% -> 95.6% |
+| `gradient_boosting` | 90.1% -> 90.6% | 92.3% -> 94.5% |
+
+By corpus (`old -> new`):
+
+| Corpus | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| copyrighted-scans (n=29) | 89.7% / 100.0% -> 89.7% / 100.0% | 93.1% / 96.6% -> 96.6% / 100.0% |
+| dnb_located (n=95) | 85.3% / 94.7% -> 86.3% / 93.7% | 88.4% / 91.6% -> 86.3% / 92.6% |
+| open-access (n=57) | 84.2% / 96.5% -> 84.2% / 96.5% | 91.2% / 91.2% -> 94.7% / 94.7% |
+
+By extraction_type, chapter_segmentation rows only (`old -> new`):
+
+| extraction_type | `logistic_regression` top1 / top3 | `gradient_boosting` top1 / top3 |
+| --- | --- | --- |
+| native (n=74) | 83.8% / 97.3% -> 85.1% / 97.3% | 91.9% / 93.2% -> 94.6% / 95.9% |
+| scan (n=12) | 100.0% / 100.0% -> 91.7% / 100.0% | 91.7% / 91.7% -> 100.0% / 100.0% |
+
+Net: essentially a wash, tilting slightly positive -- `gradient_boosting`
+top-3 gains 2.2 points overall and improves on two of three corpora, at
+the cost of a small `dnb_located` top-1 regression (88.4% -> 86.3%). The
+`pdfplumber` geometry-extraction failures are gone. The ~6x speedup was
+the actual motivation; the accuracy staying put (or nudging up) is what
+made the switch safe to ship.

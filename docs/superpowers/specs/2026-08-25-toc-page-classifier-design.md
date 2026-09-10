@@ -134,11 +134,11 @@ geometry-only pilot's excluded-text-content constraint.
 
 Extracted via `pdfalto`, the same ALTO XML converter the old pilot used --
 no longer a separately built sibling checkout, but a pip dependency whose
-wheels bundle the compiled binary. (Written against `pdfplumber` first, to
-avoid that build step entirely; swapped back on 2026-09-04, once the
-bindings existed, for a ~6x faster extraction and explicit line/word
-boxes.) A lighter re-derivation of the old pilot's proven feature set,
-keeping what's TOC-relevant and dropping what was chapter-opening-specific:
+wheels bundle the compiled binary. One PDF-to-ALTO subprocess call per
+book hands back explicit `<TextLine>` elements and per-word `<String>`
+boxes against a document-level font table. A lighter re-derivation of the
+old pilot's proven feature set, keeping what's TOC-relevant and dropping
+what was chapter-opening-specific:
 
 - Font-size contrast: page's max line font size vs. its own modal
   (body-text) font size.

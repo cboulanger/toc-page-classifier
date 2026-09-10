@@ -62,8 +62,7 @@ def predict(pdf_path: str):
 
         # Rendered here rather than by whatever the classifier itself parses
         # the PDF with: pdfalto is a text/layout extractor and produces no
-        # page images at all. pypdfium2 is the renderer pdfplumber's own
-        # to_image() delegated to before this Space stopped depending on it.
+        # page images at all, so the Space brings its own renderer.
         pdf = pypdfium2.PdfDocument(pdf_path)
         try:
             for page_index in page_indices[:_MAX_PREVIEW_PAGES]:
